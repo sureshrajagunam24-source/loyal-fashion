@@ -43,18 +43,25 @@
 
     <!-- JavaScript logic -->
     <script>
+          <script>
         function checkLogin() {
             var email = document.getElementById('email').value;
             var pass = document.getElementById('pass').value;
 
-            if(email != "" && pass != "") {
+            // Inga dhaan neenga unga Email & Password set panreenga
+            var correctEmail = "admin@gmail.com"; 
+            var correctPass = "1234";
+
+            if(email === correctEmail && pass === correctPass) {
                 document.getElementById('login-page').style.display = 'none';
                 document.getElementById('product-page').style.display = 'block';
+                alert("Login Success! Welcome to Loyal Fashion.");
             } else {
-                alert("Please enter Email and Password!");
+                alert("Incorrect ID or Password! Please try again.");
             }
         }
     </script>
+
 
 </body>
 </html>
