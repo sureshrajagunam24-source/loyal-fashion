@@ -49,50 +49,62 @@
             </div>
         </div>
     </div>
-    <script>
-        // Permanent-ah save panna localStorage use panrom
-        function toggleAuth(type) {
-            if(type === 'signup') {
-                document.getElementById('login-form').style.display = 'none';
-                document.getElementById('signup-form').style.display = 'block';
-            } else {
-                document.getElementById('signup-form').style.display = 'none';
-                document.getElementById('login-form').style.display = 'block';
-            }
+ <script>
+    function toggleAuth(type) {
+        if(type === 'signup') {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('signup-form').style.display = 'block';
+        } else {
+            document.getElementById('signup-form').style.display = 'none';
+            document.getElementById('login-form').style.display = 'block';
         }
+    }
 
-        function registerUser() {
-            var email = document.getElementById('reg-email').value;
-            var pass = document.getElementById('reg-pass').value;
-
-            if(email && pass) {
-                // Browser-la permanent-ah save aagum
-                localStorage.setItem('userEmail', email);
-                localStorage.setItem('userPass', pass);
-                alert("Registration Successful! Ippo Login pannunga.");
-                toggleAuth('login');
-            } else {
-                alert("Please fill all details!");
-            }
+    function registerUser() {
+        var email = document.getElementById('reg-email').value;
+        var pass = document.getElementById('reg-pass').value;
+        if(email && pass) {
+            localStorage.setItem('userEmail', email);
+            localStorage.setItem('userPass', pass);
+            alert("Registration Successful!");
+            toggleAuth('login');
+        } else {
+            alert("Please fill all details!");
         }
+    }
 
-        function checkLogin() {
-            var emailInput = document.getElementById('login-email').value;
-            var passInput = document.getElementById('login-pass').value;
+    // --- PUDHU PASSWORD CHANGE LOGIC ---
+    function resetPassword() {
+        var emailInput = prompt("Enter your registered Email to reset password:");
+        var storedEmail = localStorage.getItem('userEmail');
 
-            // Save panna details-ah thirumba edukrom
-            var storedEmail = localStorage.getItem('userEmail');
-            var storedPass = localStorage.getItem('userPass');
-
-            if (emailInput === storedEmail && passInput === storedPass) {
-                document.getElementById('auth-container').style.display = 'none';
-                document.getElementById('product-page').style.display = 'block';
-                alert("Welcome back! Login Success.");
-            } else {
-                alert("Incorrect Credentials! Proper-ah Register pannunga.");
+        if (emailInput === storedEmail) {
+            var newPass = prompt("Enter your NEW Password:");
+            if (newPass) {
+                localStorage.setItem('userPass', newPass); // Pudhu password save aagidhum
+                alert("Password Changed Successfully! Ippo login pannunga.");
             }
+        } else {
+            alert("Email match aagala! Register panna email-ah kudunga.");
         }
-    </script>
+    }
+
+    function checkLogin() {
+        var emailInput = document.getElementById('login-email').value;
+        var passInput = document.getElementById('login-pass').value;
+        var storedEmail = localStorage.getItem('userEmail');
+        var storedPass = localStorage.getItem('userPass');
+
+        if (emailInput === storedEmail && passInput === storedPass) {
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('product-page').style.display = 'block';
+            alert("Welcome back!");
+        } else {
+            alert("Incorrect Credentials!");
+        }
+    }
+</script>
+
 
 </body>
 </html>
