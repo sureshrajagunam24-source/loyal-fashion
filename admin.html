@@ -19,12 +19,11 @@
     <input type="text" id="pName" placeholder="Product Name">
     <input type="number" id="pPrice" placeholder="Price">
     <input type="text" id="pImage" placeholder="Image URL">
-    <button onclick="uploadProduct()">Post Product</button>
+    <button id="postBtn">Post Product</button>
     <p id="status"></p>
 </div>
 
 <script type="module">
-  // Firebase SDK using CDN (Browser-ku idhu dhaan mukkiyam)
   import { initializeApp } from "https://www.gstatic.com";
   import { getFirestore, collection, addDoc } from "https://www.gstatic.com";
 
@@ -41,7 +40,8 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  window.uploadProduct = async function() {
+  // Intha murai "onclick" badhila "addEventListener" use pandrom (Safe way)
+  document.getElementById('postBtn').addEventListener('click', async () => {
     const name = document.getElementById('pName').value;
     const price = document.getElementById('pPrice').value;
     const image = document.getElementById('pImage').value;
@@ -67,17 +67,16 @@
       statusMsg.innerText = "Product Added Successfully! ✅";
       statusMsg.style.color = "green";
       
-      // Inputs clear panna
       document.getElementById('pName').value = "";
       document.getElementById('pPrice').value = "";
       document.getElementById('pImage').value = "";
       
     } catch (e) {
-      statusMsg.innerText = "Error: " + e.message;
+      statusMsg.innerText = "Error: Firestore Rules check pannunga!";
       statusMsg.style.color = "red";
       console.error(e);
     }
-  }
+  });
 </script>
 </body>
 </html>
