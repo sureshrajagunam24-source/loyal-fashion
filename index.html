@@ -144,31 +144,39 @@
 
   // Products-ai automatic-ah load panna
   async function loadProducts() {
-    const snapshot = await db.collection("products").orderBy("createdAt", "desc").get();
-    
-    // Unga HTML-la products enga varanumo andha area (id/class)
-    const container = document.getElementById('product-list') || document.querySelector('.product-container'); 
-    
-    if(container) {
-        container.innerHTML = ""; // Palaya static products-ai remove panna
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          container.innerHTML += `
-            <div class="product-card" style="border:1px solid #ddd; padding:10px; margin:10px; border-radius:8px; text-align:center;">
-              <img src="${data.imageUrl}" alt="${data.productName}" style="width:100%; max-height:200px; object-fit:cover; border-radius:5px;">
-              <h3>${data.productName}</h3>
-              <p>Price: ₹${data.price}</p>
-              <button onclick="orderWhatsApp('${data.productName} - ₹${data.price}')" style="background:#25D366; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;">Order on WhatsApp</button>
-            </div>
-          `;
-        });
-    }
-  }
+    try {
+        const snapshot = await db.collection("products").orderBy("createdAt", "desc").get();
+        const container = document.getElementById('product-list') || document.querySelector('.product-container');
 
-  // Page load aagumpodhu products-ai fetch panna solrom
-  window.onload = function() {
+        if (container) {
+            container.innerHTML = ""; 
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                container.innerHTML += `
+                    <div class="product-card" style="border:1px solid #ddd; padding:15px; margin:10px; border-radius:10px; text-align:center; background:white;">
+                        <img src="${data.imageUrl}" alt="${data.productName}" style="width:100%; max-height:200px; object-fit:cover; border-radius:5px;">
+                        <h3 style="margin:10px 0;">${data.productName}</h3>
+                        <p style="font-weight:bold; color:#250366;">Price: ₹${data.price}</p>
+                        <button onclick="orderWhatsApp('${data.productName}', '${data.price}')" style="background:#25D366; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%; font-weight:bold;">Order on WhatsApp</button>
+                    </div>
+                `;
+            });
+        }
+    } catch (e) {
+        console.error("Error: ", e);
+    }
+}
+
+function orderWhatsApp(name, price) {
+    const phone = "91XXXXXXXXXX"; 
+    const msg = `Hi, I want to order: ${name} (Price: ₹${price})`;
+    window.open(`https://wa.me{phone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+window.onload = function() {
     loadProducts();
-  };
+};
+
 </script>
 
 </body>
