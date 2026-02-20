@@ -3,137 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loyal Fashion - Shop Now</title>
+    <title>Loyal Fashion - Home</title>
 </head>
 <body style="background-color: #f1f3f6; font-family: sans-serif; margin: 0; padding: 0;">
 
-    <!-- 1. LOGIN & REGISTER CONTAINER -->
-    <div id="auth-container" style="display: flex; width: 850px; height: 500px; margin: 50px auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
-        
-        <!-- Left Black Section (Common) -->
-        <div style="flex: 0.4; background-color: #000000; padding: 40px; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-            <img src="image.png" alt="Logo" style="width: 150px; margin-bottom: 20px; border-radius: 50%;">
-            <h1 style="font-size: 24px; letter-spacing: 2px; margin: 0; text-transform: uppercase; font-weight: bold; color: #ffd700;">Loyal Fashion</h1>
-            <p style="font-size: 11px; color: #888; margin-top: 10px;">Stay Stylish, Stay Loyal</p>
+    <!-- 1. HOME PAGE (Idhu dhaan ippo modhala theriyum) -->
+    <div id="product-page" style="display: block;">
+        <!-- HEADER -->
+        <div style="background-color: #000; color: white; padding: 15px 50px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="image.png" style="width: 40px; border-radius: 50%;">
+                <span style="font-weight: bold; font-size: 20px; letter-spacing: 1px;">LOYAL FASHION</span>
+            </div>
+            <div style="flex: 0.5;">
+                <input type="text" placeholder="Search for products..." style="width: 100%; padding: 10px; border-radius: 5px; border: none; outline: none;">
+            </div>
+            <!-- RIGHT SIDE LOGIN/SIGNUP BUTTONS -->
+            <div style="display: flex; gap: 15px;">
+                <button onclick="openAuth()" style="background: white; color: black; border: none; padding: 8px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">Login / Sign Up</button>
+                <span style="font-weight: bold; margin-top: 5px;">Cart 🛒</span>
+            </div>
         </div>
 
-        <!-- Right Section: LOGIN FORM -->
-        <div id="login-form" style="flex: 0.6; padding: 60px 50px; background-color: #ffffff; display: block;">
-            <h2 style="color: #333; margin-bottom: 30px;">Login</h2>
-            <input type="text" id="login-email" placeholder="Email / Mobile" style="width: 100%; border: none; border-bottom: 2px solid #eee; padding: 12px 0; outline: none; font-size: 16px; margin-bottom: 25px;">
-            <input type="password" id="login-pass" placeholder="Password" style="width: 100%; border: none; border-bottom: 2px solid #eee; padding: 12px 0; outline: none; font-size: 16px; margin-bottom: 35px;">
-            <button onclick="checkLogin()" style="width: 100%; background: #000; color: white; border: none; padding: 16px; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 20px;">LOGIN</button>
-            <p style="font-size: 14px; text-align: center;">New User? <a href="javascript:void(0)" onclick="toggleAuth('signup')" style="color: blue; text-decoration: none; font-weight: bold;">Create Account</a></p>
-        </div>
+        <!-- BANNER & PRODUCTS -->
+        <div style="padding: 20px 50px;">
+            <div style="width: 100%; height: 200px; background: linear-gradient(to right, #000, #434343); border-radius: 15px; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; color: #ffd700; flex-direction: column; text-align: center;">
+                <h1 style="font-size: 35px; margin: 0;">BIG BILLION SALE!</h1>
+                <p style="font-size: 16px; color: white;">Up to 70% Off on Premium Collections</p>
+            </div>
 
-        <!-- Right Section: SIGN UP FORM (Initially Hidden) -->
-        <div id="signup-form" style="flex: 0.6; padding: 60px 50px; background-color: #ffffff; display: none;">
-            <h2 style="color: #333; margin-bottom: 30px;">Create Account</h2>
-            <input type="text" id="reg-name" placeholder="Full Name" style="width: 100%; border: none; border-bottom: 2px solid #eee; padding: 12px 0; outline: none; font-size: 16px; margin-bottom: 25px;">
-            <input type="text" id="reg-email" placeholder="Email Address" style="width: 100%; border: none; border-bottom: 2px solid #eee; padding: 12px 0; outline: none; font-size: 16px; margin-bottom: 25px;">
-            <input type="password" id="reg-pass" placeholder="Set Password" style="width: 100%; border: none; border-bottom: 2px solid #eee; padding: 12px 0; outline: none; font-size: 16px; margin-bottom: 35px;">
-            <button onclick="registerUser()" style="width: 100%; background: #ffd700; color: #000; border: none; padding: 16px; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 20px;">REGISTER NOW</button>
-            <p style="font-size: 14px; text-align: center;">Already have an account? <a href="javascript:void(0)" onclick="toggleAuth('login')" style="color: blue; text-decoration: none; font-weight: bold;">Login Here</a></p>
-        </div>
-    </div>
-
-   <!-- 2. HOME PAGE -->
-<div id="product-page" style="display: none; background-color: #f1f3f6; min-height: 100vh; font-family: sans-serif; text-align: left;">
-    
-    <!-- HEADER / NAV BAR -->
-    <div style="background-color: #000; color: white; padding: 15px 50px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <img src="image.png" style="width: 40px; border-radius: 50%;">
-            <span style="font-weight: bold; font-size: 20px; letter-spacing: 1px;">LOYAL FASHION</span>
-        </div>
-        <div style="flex: 0.6;">
-            <input type="text" placeholder="Search for products..." style="width: 100%; padding: 10px; border-radius: 5px; border: none; outline: none;">
-        </div>
-        <div style="display: flex; gap: 25px; font-weight: bold;">
-            <span>Cart 🛒</span>
-            <span onclick="location.reload()" style="cursor: pointer;">Logout</span>
-        </div>
-    </div>
-
-    <!-- MAIN CONTENT AREA -->
-    <div style="padding: 20px 50px;">
-        <!-- PROMO BANNER -->
-        <div style="width: 100%; height: 200px; background: linear-gradient(to right, #000, #434343); border-radius: 15px; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; color: #ffd700; flex-direction: column; text-align: center;">
-            <h1 style="font-size: 35px; margin: 0;">BIG BILLION SALE!</h1>
-            <p style="font-size: 16px; color: white;">Up to 70% Off on Premium Collections</p>
-        </div>
-
-        <!-- PRODUCTS GRID -->
-        <h2 style="margin-bottom: 20px;">Top Recommendations</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px;">
-            <!-- Product 1 -->
-            <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center;">
-                <img src="https://images.unsplash.com" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
-                <h3 style="font-size: 18px; margin: 15px 0 5px 0;">Premium Casual Shirt</h3>
-                <p style="font-weight: bold; font-size: 20px; margin-bottom: 15px;">₹799</p>
-                <button onclick="window.open('https://wa.me, I want to buy Casual Shirt')" style="width: 100%; background: #25D366; color: white; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer;">Order via WhatsApp</button>
+            <h2>Top Recommendations</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px;">
+                <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center;">
+                    <img src="https://images.unsplash.com" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+                    <h3>Premium Casual Shirt</h3>
+                    <p style="font-weight: bold; font-size: 20px; margin-bottom: 15px;">₹799</p>
+                    <button onclick="window.open('https://wa.me, I want to buy Casual Shirt')" style="width: 100%; background: #25D366; color: white; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer;">Order via WhatsApp</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
- <script>
-    function toggleAuth(type) {
-        if(type === 'signup') {
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('signup-form').style.display = 'block';
-        } else {
-            document.getElementById('signup-form').style.display = 'none';
-            document.getElementById('login-form').style.display = 'block';
+    <!-- 2. LOGIN & REGISTER CONTAINER (Hidden by default) -->
+    <div id="auth-container" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="display: flex; width: 850px; height: 500px; background: white; border-radius: 15px; overflow: hidden; position: relative;">
+            <button onclick="closeAuth()" style="position: absolute; right: 10px; top: 10px; border: none; background: none; font-size: 20px; cursor: pointer; font-weight: bold;">X</button>
+            <!-- Left Black Section -->
+            <div style="flex: 0.4; background-color: #000; padding: 40px; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                <img src="image.png" style="width: 120px; border-radius: 50%; margin-bottom: 20px;">
+                <h1 style="font-size: 24px; color: #ffd700;">LOYAL FASHION</h1>
+            </div>
+            <!-- Right Form Section -->
+            <div id="login-form" style="flex: 0.6; padding: 50px;">
+                <h2>Login</h2>
+                <input type="text" id="login-email" placeholder="Email" style="width: 100%; border: none; border-bottom: 2px solid #eee; padding: 12px 0; margin-bottom: 25px; outline: none;">
+                <input type="password" id="login-pass" placeholder="Password" style="width: 100%; border: none; border-bottom: 2px solid #eee; padding: 12px 0; margin-bottom: 35px; outline: none;">
+                <button onclick="checkLogin()" style="width: 100%; background: #000; color: white; padding: 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">LOGIN</button>
+                <p style="text-align: center; font-size: 14px; margin-top: 20px;">New User? <a href="#" onclick="toggleAuth('signup')">Sign Up</a></p>
+            </div>
+            <div id="signup-form" style="flex: 0.6; padding: 50px; display: none;">
+                <h2>Sign Up</h2>
+                <input type="text" id="reg-email" placeholder="Email" style="width: 100%; border: none; border-bottom: 2px solid #eee; padding: 12px 0; margin-bottom: 25px; outline: none;">
+                <input type="password" id="reg-pass" placeholder="Password" style="width: 100%; border: none; border-bottom: 2px solid #eee; padding: 12px 0; margin-bottom: 35px; outline: none;">
+                <button onclick="registerUser()" style="width: 100%; background: #ffd700; color: #000; padding: 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">REGISTER</button>
+                <p style="text-align: center; font-size: 14px; margin-top: 20px;">Have account? <a href="#" onclick="toggleAuth('login')">Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openAuth() { document.getElementById('auth-container').style.display = 'flex'; }
+        function closeAuth() { document.getElementById('auth-container').style.display = 'none'; }
+        function toggleAuth(type) {
+            document.getElementById('login-form').style.display = type === 'signup' ? 'none' : 'block';
+            document.getElementById('signup-form').style.display = type === 'signup' ? 'block' : 'none';
         }
-    }
-
-    function registerUser() {
-        var email = document.getElementById('reg-email').value;
-        var pass = document.getElementById('reg-pass').value;
-        if(email && pass) {
-            localStorage.setItem('userEmail', email);
-            localStorage.setItem('userPass', pass);
-            alert("Registration Successful! Now you can Login.");
+        function registerUser() {
+            localStorage.setItem('userEmail', document.getElementById('reg-email').value);
+            localStorage.setItem('userPass', document.getElementById('reg-pass').value);
+            alert("Registered! Please Login.");
             toggleAuth('login');
-        } else {
-            alert("Please fill all details!");
         }
-    }
-
-    // --- PASSWORD RESET LOGIC ---
-    function resetPassword() {
-        var emailInput = prompt("Enter your registered Email to reset password:");
-        var storedEmail = localStorage.getItem('userEmail');
-
-        if (emailInput === storedEmail) {
-            var newPass = prompt("Enter your NEW Password:");
-            if (newPass) {
-                localStorage.setItem('userPass', newPass); 
-                alert("Password Changed Successfully! Please Login now.");
-            }
-        } else {
-            alert("Email not found! Please register first.");
+        function checkLogin() {
+            if (document.getElementById('login-email').value === localStorage.getItem('userEmail') && 
+                document.getElementById('login-pass').value === localStorage.getItem('userPass')) {
+                alert("Login Success!");
+                closeAuth();
+            } else { alert("Wrong Credentials!"); }
         }
-    }
-
-    function checkLogin() {
-        var emailInput = document.getElementById('login-email').value;
-        var passInput = document.getElementById('login-pass').value;
-        var storedEmail = localStorage.getItem('userEmail');
-        var storedPass = localStorage.getItem('userPass');
-
-        if (emailInput === storedEmail && passInput === storedPass) {
-            document.getElementById('auth-container').style.display = 'none';
-            document.getElementById('product-page').style.display = 'block';
-            alert("Welcome back! Login Success.");
-        } else {
-            alert("Incorrect Credentials! Please check.");
-        }
-    }
-</script>
-
-
-
+    </script>
 </body>
 </html>
