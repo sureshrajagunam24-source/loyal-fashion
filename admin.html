@@ -6,11 +6,17 @@
     <title>Admin - Loyal Fashion</title>
     <style>
         body { font-family: sans-serif; background: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 320px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        #status { text-align: center; margin-top: 10px; font-weight: bold; }
+        .box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; }
+        h3 { text-align: center; color: #333; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; }
+        button:hover { background: #0056b3; }
+        #status { text-align: center; margin-top: 15px; font-weight: bold; font-size: 14px; }
     </style>
+    
+    <!-- FIREBASE CONNECTION (Fixed Scripts) -->
+    <script src="https://www.gstatic.com"></script>
+    <script src="https://www.gstatic.com"></script>
 </head>
 <body>
 
@@ -18,30 +24,28 @@
     <h3>Add New Product</h3>
     <input type="text" id="pName" placeholder="Product Name">
     <input type="number" id="pPrice" placeholder="Price">
-    <input type="text" id="pImage" placeholder="Image URL">
+    <input type="text" id="pImage" placeholder="Image URL (Full Link)">
     <button id="postBtn">Post Product</button>
     <p id="status"></p>
 </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com";
-  import { getFirestore, collection, addDoc } from "https://www.gstatic.com";
-
+<script>
+  // Unga Firebase Config
   const firebaseConfig = {
     apiKey: "AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
     authDomain: "e-commerce-wepsite.firebaseapp.com",
     projectId: "e-commerce-wepsite",
     storageBucket: "e-commerce-wepsite.firebasestorage.app",
     messagingSenderId: "394408704286",
-    appId: "1:394408704286:web:9ad690a946b225ab20f10f",
-    measurementId: "G-3MDR9346WP"
+    appId: "1:394408704286:web:9ad690a946b225ab20f10f"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-  // Intha murai "onclick" badhila "addEventListener" use pandrom (Safe way)
-  document.getElementById('postBtn').addEventListener('click', async () => {
+  // Button logic
+  document.getElementById('postBtn').onclick = async function() {
     const name = document.getElementById('pName').value;
     const price = document.getElementById('pPrice').value;
     const image = document.getElementById('pImage').value;
@@ -57,26 +61,28 @@
       statusMsg.innerText = "Posting... ⏳";
       statusMsg.style.color = "blue";
       
-      await addDoc(collection(db, "products"), {
+      await db.collection("products").add({
         productName: name,
         price: price,
         imageUrl: image,
-        createdAt: new Date()
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
       statusMsg.innerText = "Product Added Successfully! ✅";
       statusMsg.style.color = "green";
       
+      // Clear inputs
       document.getElementById('pName').value = "";
       document.getElementById('pPrice').value = "";
       document.getElementById('pImage').value = "";
       
     } catch (e) {
-      statusMsg.innerText = "Error: Firestore Rules check pannunga!";
+      statusMsg.innerText = "Error: Permission Denied! Check Rules.";
       statusMsg.style.color = "red";
       console.error(e);
     }
-  });
+  };
 </script>
+
 </body>
 </html>
