@@ -69,7 +69,7 @@ button{
 
 <body>
 
-<!-- LOGIN SECTION -->
+<!-- LOGIN -->
 <div id="login-section" class="card">
     <h2>Admin Login</h2>
     <input type="email" id="email" placeholder="Admin Email">
@@ -78,7 +78,7 @@ button{
     <p id="login-status" class="status" style="color:red;"></p>
 </div>
 
-<!-- ADMIN DASHBOARD -->
+<!-- DASHBOARD -->
 <div id="admin-dashboard" class="card">
     <button class="logout-btn" onclick="logout()">Logout</button>
     <h3>Admin Dashboard</h3>
@@ -87,13 +87,12 @@ button{
 
     <input type="text" id="pName" placeholder="Product Name">
     <input type="number" id="pPrice" placeholder="Price (₹)">
-    <input type="text" id="pImage" placeholder="Image URL">
+    <input type="file" id="pImage" accept="image/*">
     <button class="post-btn" onclick="uploadProduct()">Post Product</button>
 
     <p id="post-status" class="status"></p>
 </div>
 
-<!-- Firebase v9 Modular SDK -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
@@ -101,27 +100,29 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
 from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 import { getFirestore, collection, addDoc, serverTimestamp } 
 from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } 
+from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
   authDomain: "e-commerce-wepsite.firebaseapp.com",
   projectId: "e-commerce-wepsite",
-  storageBucket: "e-commerce-wepsite.appspot.com",
+  storageBucket: "e-commerce-wepsite.firebasestorage.app",
   messagingSenderId: "394408704286",
   appId: "1:394408704286:web:9ad690a946b225ab20f10f",
   measurementId: "G-3MDR9346WP"
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 const ADMIN_EMAIL = "sureshrajagunam24@gmail.com";
 
 window.login = async function(){
-    const email = document.getElementById('email').value.trim();
-    const pass = document.getElementById('password').value.trim();
-    const status = document.getElementById('login-status');
+    const email=document.getElementById('email').value.trim();
+    const pass=document.getElementById('password').value.trim();
+    const status=document.getElementById('login-status');
 
     if(!email || !pass){
         status.innerText="Enter email & password ❌";
@@ -130,7 +131,7 @@ window.login = async function(){
 
     try{
         await signInWithEmailAndPassword(auth,email,pass);
-    }catch(err){
+    }catch{
         status.innerText="Invalid Login ❌";
     }
 }
@@ -153,20 +154,25 @@ window.uploadProduct = async function(){
 
     const name=document.getElementById('pName').value.trim();
     const price=document.getElementById('pPrice').value.trim();
-    const image=document.getElementById('pImage').value.trim();
+    const imageFile=document.getElementById('pImage').files[0];
     const status=document.getElementById('post-status');
 
-    if(!name || !price || !image){
+    if(!name || !price || !imageFile){
         status.style.color="red";
         status.innerText="Fill all fields ❌";
         return;
     }
 
     try{
+
+        const imageRef = ref(storage,"products/"+Date.now()+"_"+imageFile.name);
+        await uploadBytes(imageRef,imageFile);
+        const downloadURL = await getDownloadURL(imageRef);
+
         await addDoc(collection(db,"products"),{
             productName:name,
             price:Number(price),
-            imageUrl:image,
+            imageUrl:downloadURL,
             createdAt:serverTimestamp()
         });
 
@@ -180,6 +186,7 @@ window.uploadProduct = async function(){
     }catch(err){
         status.style.color="red";
         status.innerText="Error adding product ❌";
+        console.log(err);
     }
 }
 
