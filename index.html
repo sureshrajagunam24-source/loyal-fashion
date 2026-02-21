@@ -20,7 +20,6 @@
 </head>
 <body>
 
-    <!-- HEADER WITH LOGIN OPTION -->
     <div class="header">
         <div style="display: flex; align-items: center; gap: 10px;">
             <img src="image.png" style="width: 40px; border-radius: 50%;">
@@ -29,26 +28,21 @@
         <div style="flex: 0.5;">
             <input type="text" placeholder="Search premium wear..." style="width: 100%; padding: 10px; border-radius: 20px; border: none; outline: none; background: #222; color: white;">
         </div>
-        <!-- Buyer login-ku ippodhiku intha button -->
         <button class="login-btn" onclick="alert('Buyer Login Feature Coming Soon!')">Login</button>
     </div>
 
-    <!-- MAIN CONTENT -->
     <div style="padding: 20px 50px;">
         <div class="banner">
-            <h1 style="font-size: 35px; margin: 0;">BIG BILLION SALE!</h1>
-            <p style="font-size: 16px; color: white;">Premium Collections Starting from ₹499</p>
+            <h1>BIG BILLION SALE!</h1>
+            <p>Premium Collections Starting from ₹499</p>
         </div>
-
-        <h2 style="margin-bottom: 25px; border-left: 5px solid #000; padding-left: 10px;">Our Collections</h2>
-        
-        <!-- PRODUCT LIST CONTAINER -->
+        <h2>Our Collections</h2>
         <div id="product-list" class="product-grid">
             <p id="loading-msg">✨ Fetching latest styles for you...</p>
         </div>
     </div>
 
-    <!-- FIREBASE COMPAT LIBRARIES (FIXED) -->
+    <!-- FIREBASE COMPAT LIBRARIES (FIXED SCRIPTS) -->
     <script src="https://www.gstatic.com"></script>
     <script src="https://www.gstatic.com"></script>
 
@@ -65,39 +59,31 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // REAL-TIME PRODUCT LISTENER
         function loadProducts() {
             const list = document.getElementById('product-list');
             
             db.collection("products").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+                list.innerHTML = ""; 
                 if (snapshot.empty) {
                     list.innerHTML = "<p id='loading-msg'>No products found! Check back later.</p>";
                     return;
                 }
-
-                list.innerHTML = ""; 
-
                 snapshot.forEach((doc) => {
                     const data = doc.data();
                     list.innerHTML += `
                         <div class="product-card">
                             <img src="${data.imageUrl}" alt="${data.productName}">
-                            <h3 style="font-size: 18px; margin: 15px 0 5px 0;">${data.productName}</h3>
-                            <p style="font-weight: bold; font-size: 22px; color: #000; margin-bottom: 15px;">₹${data.price}</p>
+                            <h3 style="font-size: 18px;">${data.productName}</h3>
+                            <p style="font-weight: bold; font-size: 22px;">₹${data.price}</p>
                             <button class="buy-btn" onclick="placeOrder('${data.productName}')">Buy Now</button>
                         </div>
                     `;
                 });
             }, (error) => {
                 console.error("Firebase Error: ", error);
-                list.innerHTML = "<p style='text-align:center; grid-column:1/-1; color:red;'>Check Firebase Rules or Internet.</p>";
             });
         }
-
-        function placeOrder(name) {
-            alert("Success! ✅\nOrder Placed for: " + name + "\nOur team will contact you soon.");
-        }
-
+        function placeOrder(name) { alert("Success! ✅\nOrder Placed for: " + name); }
         window.onload = loadProducts;
     </script>
 </body>
