@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Loyal Fashion - Admin Panel</title>
-
 <style>
 :root{
     --black:#000;
@@ -99,6 +98,18 @@ button{
     width:100%;
     background:#007bff;
     color:white;
+    margin-bottom:10px;
+}
+
+.edit-btn{
+    background:#ffc107;
+    color:black;
+    margin-right:5px;
+}
+
+.delete-btn{
+    background:#dc3545;
+    color:white;
 }
 
 table{
@@ -118,7 +129,7 @@ th,td{
 
 <div class="sidebar">
     <div class="logo">
-        <img src="image.png">
+        <img src="image.png" alt="Logo">
         <h2>LOYAL FASHION</h2>
     </div>
 
@@ -133,7 +144,8 @@ th,td{
 
     <!-- ADD PRODUCT -->
     <div class="card">
-        <h3>Add New Product</h3>
+        <h3>Add / Edit Product</h3>
+        <input type="hidden" id="editId">
         <input type="text" id="pName" placeholder="Product Name">
         <input type="number" id="pPrice" placeholder="Price (₹)">
         <input type="file" id="pImage" accept="image/*">
@@ -150,6 +162,7 @@ th,td{
                     <th>Image</th>
                     <th>Name</th>
                     <th>Price</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="product-table">
@@ -162,7 +175,7 @@ th,td{
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
@@ -178,63 +191,114 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 /* AUTH CHECK */
-onAuthStateChanged(auth,(user)=>{
+onAuthStateChanged(auth, (user) => {
     if(!user || user.email !== "sureshrajagunam24@gmail.com"){
-        window.location.href="admin-login.html";
-    }else{
+        window.location.href = "admin-login.html";
+    } else {
         loadProducts();
     }
 });
 
-window.logout = function(){
-    signOut(auth);
-    window.location.href="admin-login.html";
+/* LOGOUT */
+window.logout = async function(){
+    try{
+        await signOut(auth);
+        window.location.href = "admin-login.html";
+    }catch(err){ console.error(err); }
 }
 
-/* UPLOAD PRODUCT */
+/* UPLOAD / EDIT PRODUCT */
 window.uploadProduct = async function(){
-    const name=document.getElementById("pName").value.trim();
-    const price=document.getElementById("pPrice").value.trim();
-    const file=document.getElementById("pImage").files[0];
-    const status=document.getElementById("status");
+    const name = document.getElementById("pName").value.trim();
+    const price = document.getElementById("pPrice").value.trim();
+    const file = document.getElementById("pImage").files[0];
+    const status = document.getElementById("status");
+    const editId = document.getElementById("editId").value;
 
-    if(!name || !price || !file){
-        status.innerText="Fill all fields ❌";
+    if(!name || !price || (!file && !editId)){
+        status.innerText = "Fill all fields ❌";
         return;
     }
 
-    const reader=new FileReader();
-    reader.readAsDataURL(file);
+    let imageUrl = "";
 
-    reader.onload=async ()=>{
-        await addDoc(collection(db,"products"),{
-            productName:name,
-            price:Number(price),
-            imageUrl:reader.result,
-            createdAt:serverTimestamp()
+    if(file){
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        await new Promise((resolve) => {
+            reader.onload = () => {
+                imageUrl = reader.result;
+                resolve();
+            }
         });
-        status.innerText="Product Added ✅";
-        location.reload();
+    }
+
+    try{
+        if(editId){ // edit
+            const docRef = doc(db, "products", editId);
+            await updateDoc(docRef, {
+                productName: name,
+                price: Number(price),
+                ...(imageUrl && {imageUrl}),
+                updatedAt: serverTimestamp()
+            });
+            status.innerText = "Product Updated ✅";
+            document.getElementById("editId").value = "";
+        } else { // new
+            await addDoc(collection(db,"products"),{
+                productName: name,
+                price: Number(price),
+                imageUrl: imageUrl,
+                createdAt: serverTimestamp()
+            });
+            status.innerText = "Product Added ✅";
+        }
+        document.getElementById("pName").value = "";
+        document.getElementById("pPrice").value = "";
+        document.getElementById("pImage").value = "";
+    }catch(err){
+        console.error(err);
+        status.innerText = "Error occurred ❌";
     }
 }
 
 /* LOAD INVENTORY */
 function loadProducts(){
-    const q=query(collection(db,"products"),orderBy("createdAt","desc"));
-    onSnapshot(q,(snapshot)=>{
-        const table=document.getElementById("product-table");
-        table.innerHTML="";
-        snapshot.forEach(doc=>{
-            const data=doc.data();
-            table.innerHTML+=`
-            <tr>
-                <td><img src="${data.imageUrl}" width="40"></td>
-                <td>${data.productName}</td>
-                <td>₹${data.price}</td>
-            </tr>
+    const q = query(collection(db,"products"), orderBy("createdAt","desc"));
+    onSnapshot(q, (snapshot)=>{
+        const table = document.getElementById("product-table");
+        table.innerHTML = "";
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            table.innerHTML += `
+                <tr>
+                    <td><img src="${data.imageUrl}" width="40"></td>
+                    <td>${data.productName}</td>
+                    <td>₹${data.price}</td>
+                    <td>
+                        <button class="edit-btn" onclick="editProduct('${docSnap.id}','${data.productName}','${data.price}')">Edit</button>
+                        <button class="delete-btn" onclick="deleteProduct('${docSnap.id}')">Delete</button>
+                    </td>
+                </tr>
             `;
         });
     });
+}
+
+/* EDIT PRODUCT */
+window.editProduct = function(id, name, price){
+    document.getElementById("editId").value = id;
+    document.getElementById("pName").value = name;
+    document.getElementById("pPrice").value = price;
+}
+
+/* DELETE PRODUCT */
+window.deleteProduct = async function(id){
+    if(confirm("Are you sure to delete this product?")){
+        try{
+            await deleteDoc(doc(db, "products", id));
+        }catch(err){ console.error(err); }
+    }
 }
 </script>
 
