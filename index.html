@@ -1,49 +1,105 @@
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import { getFirestore, collection, getDocs, query, orderBy } 
-from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loyal Fashion - Premium Store</title>
+    <style>
+        body { background-color: #f1f3f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        .header { background-color: #000; color: white; padding: 15px 50px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .banner { width: 100%; height: 200px; background: linear-gradient(to right, #000, #434343); border-radius: 15px; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; color: #ffd700; flex-direction: column; text-align: center; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; padding: 20px 50px; }
+        .product-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.05); text-align: center; transition: 0.3s; border: 1px solid #eee; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .product-card img { width: 100%; height: 280px; object-fit: cover; border-radius: 10px; background: #f9f9f9; }
+        .buy-btn { background: #000; color: white; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; transition: 0.3s; }
+        .buy-btn:hover { background: #333; }
+        #loading-msg { text-align: center; font-weight: bold; color: #666; grid-column: 1 / -1; padding: 50px; }
+    </style>
+</head>
+<body>
 
-const firebaseConfig = {
-    apiKey: "AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
-    authDomain: "e-commerce-wepsite.firebaseapp.com",
-    projectId: "e-commerce-wepsite",
-    storageBucket: "e-commerce-wepsite.appspot.com",
-    messagingSenderId: "394408704286",
-    appId: "1:394408704286:web:9ad690a946b225ab20f10f"
-};
+    <!-- HEADER (No Login for Buyers) -->
+    <div class="header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="image.png" style="width: 40px; border-radius: 50%;">
+            <span style="font-weight: bold; font-size: 20px; letter-spacing: 1px;">LOYAL FASHION</span>
+        </div>
+        <div style="flex: 0.5;">
+            <input type="text" placeholder="Search premium wear..." style="width: 100%; padding: 10px; border-radius: 20px; border: none; outline: none; background: #222; color: white;">
+        </div>
+        <div style="width: 40px;"></div> 
+    </div>
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    <!-- MAIN CONTENT -->
+    <div style="padding: 20px 50px;">
+        <div class="banner">
+            <h1 style="font-size: 35px; margin: 0;">BIG BILLION SALE!</h1>
+            <p style="font-size: 16px; color: white;">Premium Collections Starting from ₹499</p>
+        </div>
 
-async function loadProducts(){
-    try{
-        const q = query(collection(db,"products"), orderBy("createdAt","desc"));
-        const snapshot = await getDocs(q);
-        const list = document.getElementById("product-list");
-        list.innerHTML="";
+        <h2 style="margin-bottom: 25px; border-left: 5px solid #000; padding-left: 10px;">Our Collections</h2>
+        
+        <!-- PRODUCT LIST CONTAINER -->
+        <div id="product-list" class="product-grid">
+            <p id="loading-msg">✨ Fetching latest styles for you...</p>
+        </div>
+    </div>
 
-        snapshot.forEach((doc)=>{
-            const data=doc.data();
-            list.innerHTML+=`
-            <div class="product-card">
-                <img src="${data.imageUrl}">
-                <h3>${data.productName}</h3>
-                <p style="font-weight:bold;font-size:20px;">₹${data.price}</p>
-                <button class="buy-btn" onclick="placeOrder('${data.productName}')">
-                Buy Now
-                </button>
-            </div>
-            `;
-        });
+    <!-- FIREBASE COMPAT LIBRARIES -->
+    <script src="https://www.gstatic.com"></script>
+    <script src="https://www.gstatic.com"></script>
 
-    }catch(err){
-        console.log(err);
-    }
-}
+    <script>
+        // Unga Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
+            authDomain: "e-commerce-wepsite.firebaseapp.com",
+            projectId: "e-commerce-wepsite",
+            storageBucket: "e-commerce-wepsite.firebasestorage.app",
+            messagingSenderId: "394408704286",
+            appId: "1:394408704286:web:9ad690a946b225ab20f10f"
+        };
 
-window.placeOrder = function(name){
-    alert("Order placed for "+name+" ✅");
-}
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-loadProducts();
-</script>
+        // REAL-TIME PRODUCT LISTENER (Public Read)
+        function loadProducts() {
+            const list = document.getElementById('product-list');
+            
+            // onSnapshot logic fetches data automatically (No manual refresh)
+            db.collection("products").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+                if (snapshot.empty) {
+                    list.innerHTML = "<p id='loading-msg'>No products found! Check back later.</p>";
+                    return;
+                }
+
+                list.innerHTML = ""; 
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    list.innerHTML += `
+                        <div class="product-card">
+                            <img src="${data.imageUrl}" alt="${data.productName}">
+                            <h3 style="font-size: 18px; margin: 15px 0 5px 0;">${data.productName}</h3>
+                            <p style="font-weight: bold; font-size: 22px; color: #000; margin-bottom: 15px;">₹${data.price}</p>
+                            <button class="buy-btn" onclick="placeOrder('${data.productName}')">Buy Now</button>
+                        </div>
+                    `;
+                });
+            }, (error) => {
+                console.error("Firebase Error: ", error);
+                list.innerHTML = "<p style='text-align:center; grid-column:1/-1; color:red;'>Database Error! Check Firebase Rules.</p>";
+            });
+        }
+
+        function placeOrder(name) {
+            alert("Success! ✅\nOrder Placed for: " + name + "\nOur team will contact you for payment soon.");
+        }
+
+        window.onload = loadProducts;
+    </script>
+</body>
+</html>
