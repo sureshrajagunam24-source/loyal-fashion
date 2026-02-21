@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Buyer Login - Loyal Fashion</title>
+<style>
+body{
+background:#f2f4f8;
+font-family:Segoe UI;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+.card{
+background:white;
+padding:30px;
+border-radius:12px;
+box-shadow:0 10px 20px rgba(0,0,0,0.1);
+width:350px;
+}
+input{
+width:100%;
+padding:12px;
+margin:10px 0;
+border-radius:6px;
+border:1px solid #ddd;
+}
+button{
+width:100%;
+padding:12px;
+background:black;
+color:white;
+border:none;
+cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+<h2>Buyer Login</h2>
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p id="status" style="color:red;"></p>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
+  authDomain: "e-commerce-wepsite.firebaseapp.com",
+  projectId: "e-commerce-wepsite",
+  storageBucket: "e-commerce-wepsite.appspot.com",
+  messagingSenderId: "394408704286",
+  appId: "1:394408704286:web:9ad690a946b225ab20f10f"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+window.login = async function(){
+    const email=document.getElementById("email").value;
+    const pass=document.getElementById("password").value;
+    const status=document.getElementById("status");
+
+    try{
+        await signInWithEmailAndPassword(auth,email,pass);
+        window.location.href="index.html";
+    }catch(err){
+        status.innerText="Invalid Login ❌";
+    }
+}
+</script>
+
+</body>
+</html>
