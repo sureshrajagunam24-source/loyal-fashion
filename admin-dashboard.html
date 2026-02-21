@@ -12,7 +12,7 @@ body{margin:0;font-family:Segoe UI;display:flex;height:100vh;background:#f4f6f9;
 .logo h2{margin-top:10px;letter-spacing:2px;}
 .nav-item{padding:15px;margin-bottom:10px;border-radius:8px;cursor:pointer;transition:0.3s;}
 .nav-item:hover{background:#222;color:#ffd700;}
-.logout{margin-top:auto;background:#ff4d4d;text-align:center;}
+.logout{margin-top:auto;background:#ff4d4d;text-align:center;cursor:pointer;}
 .main{flex:1;padding:40px;overflow:auto;}
 .card{background:white;padding:25px;border-radius:15px;box-shadow:0 8px 20px rgba(0,0,0,0.05);margin-bottom:30px;}
 input{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid #ddd;}
@@ -20,6 +20,9 @@ button{padding:12px;border:none;border-radius:8px;font-weight:bold;cursor:pointe
 .post-btn{width:100%;background:#007bff;color:white;margin-bottom:10px;}
 table{width:100%;border-collapse:collapse;}
 th,td{padding:12px;border-bottom:1px solid #eee;text-align:left;}
+img.product-img{width:50px;height:50px;border-radius:8px;}
+.edit-btn{background:#ffc107;color:#000;padding:5px 10px;margin-right:5px;border-radius:5px;cursor:pointer;}
+.delete-btn{background:#dc3545;color:white;padding:5px 10px;border-radius:5px;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -32,12 +35,38 @@ th,td{padding:12px;border-bottom:1px solid #eee;text-align:left;}
 
 <div class="main">
 <h1>Admin Dashboard</h1>
-<p>Welcome, Admin! You are successfully logged in.</p>
+
+<!-- ADD PRODUCT -->
+<div class="card">
+    <h3>Add / Update Product</h3>
+    <input type="hidden" id="productId">
+    <input type="text" id="pName" placeholder="Product Name">
+    <input type="number" id="pPrice" placeholder="Price (₹)">
+    <input type="file" id="pImage" accept="image/*">
+    <button class="post-btn" onclick="saveProduct()">Save Product</button>
+    <p id="status"></p>
+</div>
+
+<!-- INVENTORY TABLE -->
+<div class="card">
+<h3>Inventory</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="product-table"></tbody>
+</table>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, doc, setDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
@@ -50,17 +79,104 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-/* AUTH CHECK - only admin email */
+/* AUTH CHECK */
 onAuthStateChanged(auth, (user)=>{
     if(!user || user.email.toLowerCase()!=="sureshrajagunam24@gmail.com"){
         window.location.href="admin-login.html";
+    } else {
+        loadProducts();
     }
 });
 
 /* LOGOUT */
 window.logout = async function(){
     try{ await signOut(auth); window.location.href="admin-login.html"; }catch(err){console.error(err);}
+}
+
+/* SAVE / UPDATE PRODUCT */
+window.saveProduct = async function(){
+    const name = document.getElementById("pName").value.trim();
+    const price = document.getElementById("pPrice").value.trim();
+    const file = document.getElementById("pImage").files[0];
+    const status = document.getElementById("status");
+    const id = document.getElementById("productId").value;
+
+    if(!name || !price || (!file && !id)){
+        status.innerText="Fill all fields ❌";
+        return;
+    }
+
+    let imageUrl = "";
+
+    if(file){
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async ()=>{
+            imageUrl = reader.result;
+            if(id){
+                await setDoc(doc(db,"products",id), {productName:name, price:Number(price), imageUrl:imageUrl, updatedAt:serverTimestamp()});
+                status.innerText="Product updated ✅";
+            } else {
+                await addDoc(collection(db,"products"), {productName:name, price:Number(price), imageUrl:imageUrl, createdAt:serverTimestamp()});
+                status.innerText="Product added ✅";
+            }
+            resetForm();
+        };
+    } else {
+        // update without changing image
+        await setDoc(doc(db,"products",id), {productName:name, price:Number(price), updatedAt:serverTimestamp()}, {merge:true});
+        status.innerText="Product updated ✅";
+        resetForm();
+    }
+}
+
+/* LOAD PRODUCTS */
+function loadProducts(){
+    const q = collection(db,"products");
+    onSnapshot(q,(snapshot)=>{
+        const table = document.getElementById("product-table");
+        table.innerHTML="";
+        snapshot.forEach(docSnap=>{
+            const data = docSnap.data();
+            const id = docSnap.id;
+            table.innerHTML += `
+            <tr>
+                <td><img src="${data.imageUrl}" class="product-img"></td>
+                <td>${data.productName}</td>
+                <td>₹${data.price}</td>
+                <td>
+                    <span class="edit-btn" onclick="editProduct('${id}','${data.productName}',${data.price})">Edit</span>
+                    <span class="delete-btn" onclick="deleteProduct('${id}')">Delete</span>
+                </td>
+            </tr>
+            `;
+        });
+    });
+}
+
+/* EDIT PRODUCT */
+window.editProduct = function(id,name,price){
+    document.getElementById("productId").value = id;
+    document.getElementById("pName").value = name;
+    document.getElementById("pPrice").value = price;
+    document.getElementById("status").innerText="Editing product...";
+}
+
+/* DELETE PRODUCT */
+window.deleteProduct = async function(id){
+    if(confirm("Are you sure to delete this product?")){
+        await deleteDoc(doc(db,"products",id));
+    }
+}
+
+/* RESET FORM */
+function resetForm(){
+    document.getElementById("productId").value="";
+    document.getElementById("pName").value="";
+    document.getElementById("pPrice").value="";
+    document.getElementById("pImage").value="";
 }
 </script>
 
