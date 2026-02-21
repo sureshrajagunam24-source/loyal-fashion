@@ -1,93 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Loyal Fashion</title>
-    <style>
-        body { background-color: #f1f3f6; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #000; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        #admin-dashboard { display: none; width: 450px; text-align: left; }
-    </style>
-    <script src="https://www.gstatic.com"></script>
-    <script src="https://www.gstatic.com"></script>
-    <script src="https://www.gstatic.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - Loyal Fashion</title>
+
+<style>
+body{
+    margin:0;
+    font-family: 'Segoe UI', sans-serif;
+    background:#f2f4f8;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.card{
+    background:#fff;
+    padding:30px;
+    border-radius:15px;
+    box-shadow:0 15px 30px rgba(0,0,0,0.1);
+    width:380px;
+}
+
+h2,h3{
+    margin-bottom:20px;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border-radius:8px;
+    border:1px solid #ddd;
+    box-sizing:border-box;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+.login-btn{ background:#000; color:#fff; }
+.post-btn{ background:#007bff; color:#fff; }
+.logout-btn{
+    background:#ff4d4d;
+    color:#fff;
+    padding:6px 12px;
+    font-size:12px;
+    float:right;
+    width:auto;
+}
+
+#admin-dashboard{ display:none; }
+.status{
+    font-size:14px;
+    margin-top:10px;
+    text-align:center;
+}
+</style>
 </head>
+
 <body>
 
-    <div id="login-section" class="card">
-        <h2>Admin Login</h2>
-        <input type="email" id="email" placeholder="Admin Email">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="login()">Login</button>
-        <p id="login-status" style="color: red; font-size: 14px; margin-top: 10px;"></p>
-    </div>
+<!-- LOGIN SECTION -->
+<div id="login-section" class="card">
+    <h2>Admin Login</h2>
+    <input type="email" id="email" placeholder="Admin Email">
+    <input type="password" id="password" placeholder="Password">
+    <button class="login-btn" onclick="login()">Login</button>
+    <p id="login-status" class="status" style="color:red;"></p>
+</div>
 
-    <div id="admin-dashboard" class="card">
-        <button onclick="firebase.auth().signOut()" style="background:#ff4d4d; float:right; padding:5px 10px; font-size:12px; color:white; border:none; border-radius:5px;">Logout</button>
-        <h3>Admin Dashboard</h3>
-        <hr>
-        <p>Post New Product:</p>
-        <input type="text" id="pName" placeholder="Product Name">
-        <input type="number" id="pPrice" placeholder="Price (₹)">
-        <input type="text" id="pImage" placeholder="Image URL">
-        <button onclick="uploadProduct()" style="background: #007bff;">Post Product</button>
-        <p id="post-status" style="font-weight: bold; text-align: center; margin-top: 10px;"></p>
-    </div>
-<script src="https://www.gstatic.com"></script>
-<script src="https://www.gstatic.com"></script>
-<script src="https://www.gstatic.com"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
-            authDomain: "e-commerce-wepsite.firebaseapp.com",
-            projectId: "e-commerce-wepsite",
-            storageBucket: "e-commerce-wepsite.firebasestorage.app",
-            messagingSenderId: "394408704286",
-            appId: "1:394408704286:web:9ad690a946b225ab20f10f"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+<!-- ADMIN DASHBOARD -->
+<div id="admin-dashboard" class="card">
+    <button class="logout-btn" onclick="logout()">Logout</button>
+    <h3>Admin Dashboard</h3>
+    <hr>
+    <p>Post New Product</p>
 
-        async function login() {
-            const email = document.getElementById('email').value.trim();
-            const pass = document.getElementById('password').value.trim();
-            const status = document.getElementById('login-status');
-            try {
-                await auth.signInWithEmailAndPassword(email, pass);
-            } catch (error) {
-                status.innerText = "Invalid Login! Check Email/Password. ❌";
-            }
-        }
+    <input type="text" id="pName" placeholder="Product Name">
+    <input type="number" id="pPrice" placeholder="Price (₹)">
+    <input type="text" id="pImage" placeholder="Image URL">
+    <button class="post-btn" onclick="uploadProduct()">Post Product</button>
 
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                document.getElementById('login-section').style.display = 'none';
-                document.getElementById('admin-dashboard').style.display = 'block';
-            } else {
-                document.getElementById('login-section').style.display = 'block';
-                document.getElementById('admin-dashboard').style.display = 'none';
-            }
+    <p id="post-status" class="status"></p>
+</div>
+
+<!-- Firebase v9 Modular SDK -->
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } 
+from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, serverTimestamp } 
+from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "XXXX",
+    appId: "XXXX"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const ADMIN_EMAIL = "youradmin@email.com"; // 🔥 Change this
+
+window.login = async function(){
+    const email = document.getElementById('email').value.trim();
+    const pass = document.getElementById('password').value.trim();
+    const status = document.getElementById('login-status');
+
+    if(!email || !pass){
+        status.innerText="Enter email & password ❌";
+        return;
+    }
+
+    try{
+        await signInWithEmailAndPassword(auth,email,pass);
+    }catch(err){
+        status.innerText="Invalid Login ❌";
+    }
+}
+
+window.logout = function(){
+    signOut(auth);
+}
+
+onAuthStateChanged(auth,(user)=>{
+    if(user && user.email===ADMIN_EMAIL){
+        document.getElementById('login-section').style.display="none";
+        document.getElementById('admin-dashboard').style.display="block";
+    }else{
+        document.getElementById('login-section').style.display="block";
+        document.getElementById('admin-dashboard').style.display="none";
+    }
+});
+
+window.uploadProduct = async function(){
+
+    const name=document.getElementById('pName').value.trim();
+    const price=document.getElementById('pPrice').value.trim();
+    const image=document.getElementById('pImage').value.trim();
+    const status=document.getElementById('post-status');
+
+    if(!name || !price || !image){
+        status.style.color="red";
+        status.innerText="Fill all fields ❌";
+        return;
+    }
+
+    try{
+        await addDoc(collection(db,"products"),{
+            productName:name,
+            price:Number(price),
+            imageUrl:image,
+            createdAt:serverTimestamp()
         });
 
-        async function uploadProduct() {
-            const name = document.getElementById('pName').value;
-            const price = document.getElementById('pPrice').value;
-            const image = document.getElementById('pImage').value;
-            const status = document.getElementById('post-status');
-            try {
-                await db.collection("products").add({
-                    productName: name, price: price, imageUrl: image, createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                status.innerText = "Product Added Successfully! ✅";
-                status.style.color = "green";
-            } catch (e) {
-                status.innerText = "Error posting product! ❌";
-            }
-        }
-    </script>
+        status.style.color="green";
+        status.innerText="Product Added Successfully ✅";
+
+        document.getElementById('pName').value="";
+        document.getElementById('pPrice').value="";
+        document.getElementById('pImage').value="";
+
+    }catch(err){
+        status.style.color="red";
+        status.innerText="Error adding product ❌";
+    }
+}
+
+</script>
 </body>
 </html>
