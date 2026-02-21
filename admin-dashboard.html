@@ -22,7 +22,6 @@ button{padding:12px;border:none;border-radius:8px;font-weight:bold;cursor:pointe
 table{width:100%;border-collapse:collapse;}
 th,td{padding:12px;border-bottom:1px solid #eee;text-align:left;}
 img.product-img{width:50px;height:50px;border-radius:8px;}
-.edit-btn{background:#ffc107;color:#000;padding:5px 10px;margin-right:5px;border-radius:5px;cursor:pointer;}
 .delete-btn{background:#dc3545;color:white;padding:5px 10px;border-radius:5px;cursor:pointer;}
 </style>
 </head>
@@ -30,15 +29,15 @@ img.product-img{width:50px;height:50px;border-radius:8px;}
 
 <div class="sidebar">
     <div class="logo"><img src="image.png" alt="Logo"><h2>LOYAL FASHION</h2></div>
-    <div class="nav-item active" onclick="showTab('dashboard')">📊 Dashboard</div>
-    <div class="nav-item" onclick="showTab('addProduct')">➕ Add Product</div>
-    <div class="nav-item" onclick="showTab('inventory')">📦 Inventory</div>
+    <div class="nav-item" onclick="scrollToSection('dashboard')">📊 Dashboard</div>
+    <div class="nav-item" onclick="scrollToSection('add-inventory')">➕ Add Product / Inventory</div>
     <div class="nav-item logout" onclick="logout()">🚪 Logout</div>
 </div>
 
 <div class="main">
+
   <!-- Dashboard summary -->
-  <div id="dashboard" class="tab-card">
+  <div id="dashboard" class="section">
       <h1>Dashboard Summary</h1>
       <div class="card">
         <p>Total Products: <span id="total-products">0</span></p>
@@ -55,8 +54,8 @@ img.product-img{width:50px;height:50px;border-radius:8px;}
       </div>
   </div>
 
-  <!-- Add Product form -->
-  <div id="addProduct" class="tab-card" style="display:none;">
+  <!-- Add Product + Inventory combined -->
+  <div id="add-inventory" class="section" style="margin-top:30px;">
       <h1>Add New Product</h1>
       <div class="card">
           <input type="text" id="pName" placeholder="Product Name">
@@ -65,11 +64,7 @@ img.product-img{width:50px;height:50px;border-radius:8px;}
           <button class="post-btn" onclick="saveProduct()">Upload Product</button>
           <p id="status"></p>
       </div>
-  </div>
 
-  <!-- Inventory section -->
-  <div id="inventory" class="tab-card" style="display:none;">
-      <h1>Inventory</h1>
       <div class="card">
         <h3>Inventory Table</h3>
         <table>
@@ -80,12 +75,13 @@ img.product-img{width:50px;height:50px;border-radius:8px;}
         </table>
       </div>
   </div>
+
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, doc, setDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
@@ -113,12 +109,9 @@ onAuthStateChanged(auth, (user)=>{
 /* LOGOUT */
 window.logout = async function(){ try{ await signOut(auth); window.location.href="admin-login.html"; }catch(err){console.error(err);}}
 
-/* Tabs */
-function showTab(tab){
-    document.querySelectorAll('.tab-card').forEach(div=>div.style.display='none');
-    document.getElementById(tab).style.display='block';
-    document.querySelectorAll('.nav-item').forEach(nav=>nav.classList.remove('active'));
-    event.target.classList.add('active');
+/* Scroll to section */
+window.scrollToSection = function(id){
+    document.getElementById(id).scrollIntoView({behavior:'smooth'});
 }
 
 /* SAVE PRODUCT */
