@@ -3,36 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loyal Fashion - Admin Security</title>
+    <title>Admin Dashboard - Loyal Fashion</title>
     <style>
         body { background-color: #f1f3f6; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; text-align: center; }
         input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background: #000; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         #admin-dashboard { display: none; width: 450px; text-align: left; }
-        .logout-btn { background: #ff4d4d; width: auto; padding: 5px 15px; float: right; margin-top: -5px; }
     </style>
-    <!-- Firebase SDK (Compat Version) -->
+    <!-- FIREBASE LIBRARIES (Intha Version Kandippa Work Aagum) -->
     <script src="https://www.gstatic.com"></script>
     <script src="https://www.gstatic.com"></script>
     <script src="https://www.gstatic.com"></script>
 </head>
 <body>
 
-    <!-- 1. LOGIN FORM -->
+    <!-- LOGIN FORM -->
     <div id="login-section" class="card">
-        <h2 style="color: #333;">Admin Login</h2>
-        <p style="font-size: 14px; color: #666;">Only authorized admin can post products.</p>
+        <h2>Admin Login</h2>
         <input type="email" id="email" placeholder="Admin Email">
         <input type="password" id="password" placeholder="Password">
-        <button onclick="login()">Login to Dashboard</button>
+        <button onclick="login()">Login</button>
         <p id="login-status" style="color: red; font-size: 14px; margin-top: 10px;"></p>
     </div>
 
-    <!-- 2. ADMIN DASHBOARD -->
+    <!-- ADMIN DASHBOARD -->
     <div id="admin-dashboard" class="card">
-        <button class="logout-btn" onclick="logout()">Logout</button>
-        <h3 style="margin-top: 0;">Admin Dashboard</h3>
+        <h3>Admin Dashboard</h3>
         <hr>
         <p>Post New Product:</p>
         <input type="text" id="pName" placeholder="Product Name">
@@ -41,11 +38,8 @@
         <button onclick="uploadProduct()" style="background: #007bff;">Post Product</button>
         <p id="post-status" style="font-weight: bold; text-align: center; margin-top: 10px;"></p>
     </div>
-<script src="https://www.gstatic.com"></script>
-<script src="https://www.gstatic.com"></script>
-<script src="https://www.gstatic.com"></script>
+
     <script>
-        // Unga Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
             authDomain: "e-commerce-wepsite.firebaseapp.com",
@@ -59,22 +53,17 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // LOGIN
         async function login() {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
+            const email = document.getElementById('email').value.trim();
+            const pass = document.getElementById('password').value.trim();
             const status = document.getElementById('login-status');
             try {
                 await auth.signInWithEmailAndPassword(email, pass);
             } catch (error) {
-                status.innerText = "Error: Invalid Login! ❌";
+                status.innerText = "Error: " + error.message;
             }
         }
 
-        // LOGOUT
-        function logout() { auth.signOut(); }
-
-        // AUTH CHECK (Dashboard-ai secure panna)
         auth.onAuthStateChanged(user => {
             if (user) {
                 document.getElementById('login-section').style.display = 'none';
@@ -85,21 +74,13 @@
             }
         });
 
-        // UPLOAD PRODUCT
         async function uploadProduct() {
             const name = document.getElementById('pName').value;
             const price = document.getElementById('pPrice').value;
             const image = document.getElementById('pImage').value;
             const status = document.getElementById('post-status');
 
-            if(!name || !price || !image) {
-                status.innerText = "Fill all fields! ❌";
-                status.style.color = "red";
-                return;
-            }
-
             try {
-                status.innerText = "Posting... ⏳";
                 await db.collection("products").add({
                     productName: name,
                     price: price,
@@ -108,12 +89,8 @@
                 });
                 status.innerText = "Product Added Successfully! ✅";
                 status.style.color = "green";
-                document.getElementById('pName').value = "";
-                document.getElementById('pPrice').value = "";
-                document.getElementById('pImage').value = "";
             } catch (e) {
                 status.innerText = "Error posting!";
-                console.error(e);
             }
         }
     </script>
