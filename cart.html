@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Cart - Loyal Fashion</title>
+<style>
+body{font-family:Segoe UI;background:#f4f6f9;margin:0;padding:30px;}
+.cart-box{background:white;padding:20px;border-radius:10px;}
+img{width:80px;}
+.total{font-size:20px;font-weight:bold;margin-top:20px;}
+</style>
+</head>
+<body>
+
+<h2>🛒 Your Cart</h2>
+
+<div class="cart-box" id="cart-items"></div>
+<div class="total" id="total"></div>
+
+<script>
+const cart=JSON.parse(localStorage.getItem("cart"))||[];
+const box=document.getElementById("cart-items");
+let total=0;
+
+cart.forEach(item=>{
+ total+=item.price;
+ box.innerHTML+=`
+  <div>
+   <img src="${item.image}">
+   <p>${item.name}</p>
+   <p>₹${item.price}</p>
+  </div>
+  <hr>
+ `;
+});
+
+document.getElementById("total").innerText="Total: ₹"+total;
+</script>
+
+</body>
+</html>
