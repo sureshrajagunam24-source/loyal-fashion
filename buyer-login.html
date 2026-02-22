@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Buyer Login - Loyal Fashion</title>
+<style>
+body{
+    margin:0;
+    font-family:Segoe UI;
+    background:#f4f6f9;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+.login-box{
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+    width:300px;
+    text-align:center;
+}
+.logo img{
+    width:60px;
+    border-radius:50%;
+}
+input{
+    width:100%;
+    padding:10px;
+    margin:10px 0;
+}
+button{
+    width:100%;
+    padding:10px;
+    background:black;
+    color:white;
+    border:none;
+}
+</style>
+</head>
+<body>
+
+<div class="login-box">
+    <div class="logo">
+        <img src="image.png">
+        <h3>LOYAL FASHION</h3>
+    </div>
+
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+ apiKey: "YOUR_KEY",
+ authDomain: "e-commerce-wepsite.firebaseapp.com"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+function login(){
+ const email=document.getElementById("email").value;
+ const password=document.getElementById("password").value;
+
+ auth.signInWithEmailAndPassword(email,password)
+ .then(()=>window.location.href="index.html")
+ .catch(e=>alert(e.message));
+}
+</script>
+
+</body>
+</html>
