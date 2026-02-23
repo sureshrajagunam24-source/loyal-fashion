@@ -4,263 +4,104 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Dashboard - Loyal Fashion</title>
-
 <style>
-body{margin:0;font-family:Segoe UI;display:flex;height:100vh;background:#f4f6f9;}
-.sidebar{width:250px;background:#000;color:#fff;display:flex;flex-direction:column;padding:20px;}
-.logo{text-align:center;margin-bottom:40px;}
-.logo img{width:60px;border-radius:50%;}
-.logo h2{margin:10px 0 0 0;}
-.nav-item{padding:15px;margin-bottom:10px;border-radius:8px;cursor:pointer;}
-.nav-item:hover{background:#222;color:#ffd700;}
-.nav-item.active{background:#222;color:#ffd700;}
-.logout{margin-top:auto;background:#ff4d4d;text-align:center;}
-.main{flex:1;padding:40px;overflow:auto;}
-.card{background:#fff;padding:25px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.05);margin-bottom:25px;}
-input{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid #ddd;}
-button{padding:8px 12px;border:none;border-radius:6px;cursor:pointer;}
-.post-btn{width:100%;background:#007bff;color:#fff;}
-.edit-btn{background:#ffc107;}
-.delete-btn{background:#dc3545;color:#fff;}
-table{width:100%;border-collapse:collapse;}
-th,td{padding:12px;border-bottom:1px solid #eee;text-align:left;}
-img{width:50px;border-radius:8px;}
+    body{margin:0;font-family:Segoe UI;display:flex;height:100vh;background:#f4f6f9;}
+    .sidebar{width:250px;background:#000;color:#fff;display:flex;flex-direction:column;padding:20px;}
+    .nav-item{padding:15px;margin-bottom:10px;border-radius:8px;cursor:pointer; transition:0.3s}
+    .nav-item:hover, .nav-item.active{background:#222;color:#ffd700;}
+    .main{flex:1;padding:40px;overflow:auto;}
+    .card{background:#fff;padding:25px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.05);margin-bottom:25px;}
+    table{width:100%;border-collapse:collapse;}
+    th,td{padding:12px;border-bottom:1px solid #eee;text-align:left;}
+    .tab{display:none;} .tab.active{display:block;}
 </style>
 </head>
-
 <body>
 
 <div class="sidebar">
-    <div class="logo">
-        <img src="image.png">
-        <h2>LOYAL FASHION</h2>
-    </div>
-
+    <div style="text-align:center;margin-bottom:40px;"><h2>LOYAL FASHION</h2></div>
     <div class="nav-item active" onclick="showTab('dashboard')">📊 Dashboard</div>
     <div class="nav-item" onclick="showTab('addProduct')">➕ Add Product</div>
     <div class="nav-item" onclick="showTab('inventory')">📦 Inventory</div>
     <div class="nav-item" onclick="showTab('orders')">🧾 Orders</div>
-    <div class="nav-item logout" onclick="logout()">🚪 Logout</div>
+    <button onclick="logout()" style="margin-top:auto;background:red;color:white;border:none;padding:10px;cursor:pointer;border-radius:5px;">Logout</button>
 </div>
 
 <div class="main">
-
-<div id="dashboard" class="tab">
-    <div class="card">
-        <h2>Dashboard</h2>
-        <p>Total Products: <span id="total">0</span></p>
-    </div>
-</div>
-
-<div id="addProduct" class="tab" style="display:none;">
-    <div class="card">
+    <div id="dashboard" class="tab active"><div class="card"><h2>Dashboard</h2><p>Total Products: <span id="total">0</span></p></div></div>
+    
+    <div id="addProduct" class="tab"><div class="card">
         <h2>Add Product</h2>
-        <input type="text" id="pName" placeholder="Product Name">
-        <input type="number" id="pPrice" placeholder="Price">
-        <input type="file" id="pImage" accept="image/*">
-        <button class="post-btn" onclick="saveProduct()">Save Product</button>
+        <input type="text" id="pName" placeholder="Product Name" style="width:100%;padding:10px;margin-bottom:10px;">
+        <input type="number" id="pPrice" placeholder="Price" style="width:100%;padding:10px;margin-bottom:10px;">
+        <input type="file" id="pImage" style="margin-bottom:10px;">
+        <button onclick="saveProduct()" style="background:#007bff;color:white;padding:10px;width:100%;border:none;cursor:pointer;">Save Product</button>
         <p id="status"></p>
-    </div>
+    </div></div>
+
+    <div id="inventory" class="tab"><div class="card"><h2>Inventory</h2><table><thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Action</th></tr></thead><tbody id="product-table"></tbody></table></div></div>
+    
+    <div id="orders" class="tab"><div class="card"><h2>Buyer Orders</h2><table><thead><tr><th>Image</th><th>Product</th><th>Price</th><th>Buyer</th></tr></thead><tbody id="orders-table"></tbody></table></div></div>
 </div>
 
-<div id="inventory" class="tab" style="display:none;">
-    <div class="card">
-        <h2>Inventory</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Image</th>
-                    <th>Name</th>
-                    <th>Price</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="product-table"></tbody>
-        </table>
-    </div>
-</div>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-<div id="orders" class="tab" style="display:none;">
-    <div class="card">
-        <h2>Buyer Orders</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Image</th>
-                    <th>Product</th>
-                    <th>Price</th>
-                    <th>Buyer Email</th>
-                </tr>
-            </thead>
-            <tbody id="orders-table"></tbody>
-        </table>
-    </div>
-</div>
-
-</div>
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-import { 
-    getFirestore, 
-    collection, 
-    addDoc, 
-    doc, 
-    updateDoc, 
-    deleteDoc, 
-    onSnapshot,
-    serverTimestamp 
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
-  authDomain: "e-commerce-wepsite.firebaseapp.com",
-  projectId: "e-commerce-wepsite",
-  storageBucket: "e-commerce-wepsite.appspot.com",
-  messagingSenderId: "394408704286",
-  appId: "1:394408704286:web:9ad690a946b225ab20f10f"
+<script>
+const firebaseConfig={
+    apiKey:"AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
+    authDomain:"e-commerce-wepsite.firebaseapp.com",
+    projectId:"e-commerce-wepsite",
+    storageBucket:"e-commerce-wepsite.appspot.com",
+    messagingSenderId:"394408704286",
+    appId:"1:394408704286:web:9ad690a946b225ab20f10f"
 };
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+const auth=firebase.auth();
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-let editId = null;
-
-/* AUTH CHECK */
-onAuthStateChanged(auth, (user)=>{
-    if(!user || user.email !== "sureshrajagunam24@gmail.com"){
-        window.location.href="admin-login.html";
-    } else {
-        loadProducts();
-        loadOrders();
-    }
+auth.onAuthStateChanged(user=>{
+    if(!user || user.email !== "sureshrajagunam24@gmail.com"){ window.location.href="admin-login.html"; }
+    else { loadData(); }
 });
 
-/* TAB SWITCH */
-window.showTab = function(tab){
-    document.querySelectorAll('.tab').forEach(t=>t.style.display='none');
-    document.getElementById(tab).style.display='block';
+function showTab(tabId){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    event.currentTarget.classList.add('active');
 }
 
-/* LOGOUT */
-window.logout = function(){
-    signOut(auth);
-    window.location.href="admin-login.html";
+function loadData(){
+    db.collection("products").onSnapshot(snap=>{
+        document.getElementById("total").innerText=snap.size;
+        let html="";
+        snap.forEach(doc=>{ const d=doc.data(); html+=`<tr><td><img src="${d.imageUrl}" width="50"></td><td>${d.productName}</td><td>₹${d.price}</td><td><button onclick="deleteProduct('${doc.id}')" style="color:red">Delete</button></td></tr>`; });
+        document.getElementById("product-table").innerHTML=html;
+    });
+    db.collection("orders").orderBy("createdAt","desc").onSnapshot(snap=>{
+        let html="";
+        snap.forEach(doc=>{ const d=doc.data(); html+=`<tr><td><img src="${d.imageUrl}" width="50"></td><td>${d.productName}</td><td>₹${d.price}</td><td>${d.user}</td></tr>`; });
+        document.getElementById("orders-table").innerHTML=html;
+    });
 }
 
-/* SAVE PRODUCT */
-window.saveProduct = function(){
-
-    const name=document.getElementById("pName").value.trim();
-    const price=document.getElementById("pPrice").value.trim();
+function saveProduct(){
+    const name=document.getElementById("pName").value;
+    const price=document.getElementById("pPrice").value;
     const file=document.getElementById("pImage").files[0];
-    const status=document.getElementById("status");
-
-    if(!name || !price){
-        status.innerText="Fill all fields ❌";
-        return;
-    }
-
-    if(file){
-        const reader=new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload=async ()=>{
-
-            if(editId){
-                await updateDoc(doc(db,"products",editId),{
-                    productName:name,
-                    price:Number(price),
-                    imageUrl:reader.result
-                });
-                status.innerText="Updated ✅";
-                editId=null;
-            } else {
-                await addDoc(collection(db,"products"),{
-                    productName:name,
-                    price:Number(price),
-                    imageUrl:reader.result,
-                    createdAt: serverTimestamp()
-                });
-                status.innerText="Added ✅";
-            }
-
-            clearForm();
-        }
+    if(!file) return;
+    const reader=new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload=async()=>{
+        await db.collection("products").add({ productName:name, price:Number(price), imageUrl:reader.result, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+        alert("Added!");
     }
 }
 
-/* LOAD PRODUCTS */
-function loadProducts(){
-    onSnapshot(collection(db,"products"),(snapshot)=>{
-        const table=document.getElementById("product-table");
-        table.innerHTML="";
-        document.getElementById("total").innerText=snapshot.size;
-
-        snapshot.forEach(docSnap=>{
-            const data=docSnap.data();
-
-            table.innerHTML+=`
-            <tr>
-                <td><img src="${data.imageUrl}"></td>
-                <td>${data.productName}</td>
-                <td>₹${data.price}</td>
-                <td>
-                    <button class="edit-btn" onclick="editProduct('${docSnap.id}','${data.productName}','${data.price}')">Edit</button>
-                    <button class="delete-btn" onclick="deleteProduct('${docSnap.id}')">Delete</button>
-                </td>
-            </tr>
-            `;
-        });
-    });
-}
-
-/* LOAD ORDERS */
-function loadOrders(){
-    onSnapshot(collection(db,"orders"),(snapshot)=>{
-        const table=document.getElementById("orders-table");
-        table.innerHTML="";
-
-        snapshot.forEach(docSnap=>{
-            const data=docSnap.data();
-
-            table.innerHTML+=`
-            <tr>
-                <td><img src="${data.imageUrl}"></td>
-                <td>${data.productName}</td>
-                <td>₹${data.price}</td>
-                <td>${data.user}</td>
-            </tr>
-            `;
-        });
-    });
-}
-
-/* EDIT */
-window.editProduct=function(id,name,price){
-    showTab('addProduct');
-    document.getElementById("pName").value=name;
-    document.getElementById("pPrice").value=price;
-    editId=id;
-}
-
-/* DELETE */
-window.deleteProduct=async function(id){
-    if(confirm("Delete this product?")){
-        await deleteDoc(doc(db,"products",id));
-    }
-}
-
-/* CLEAR FORM */
-function clearForm(){
-    document.getElementById("pName").value="";
-    document.getElementById("pPrice").value="";
-    document.getElementById("pImage").value="";
-}
-
+function deleteProduct(id){ if(confirm("Delete?")) db.collection("products").doc(id).delete(); }
+function logout(){ auth.signOut(); }
 </script>
-
 </body>
 </html>
