@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Orders - Loyal Fashion</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
@@ -11,28 +12,22 @@
         .order-card img { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
         .order-info { flex: 1; }
         .order-info h3 { margin: 0 0 8px 0; font-size: 17px; color: #282c3f; }
-        .order-info p { margin: 4px 0; color: #666; font-size: 14px; font-weight: 500; }
+        .order-info p { margin: 4px 0; color: #666; font-size: 14px; }
         
-        /* STATUS PILLS LOGIC */
-        .status-badge { 
-            padding: 6px 14px; 
-            border-radius: 20px; 
-            font-size: 11px; 
-            font-weight: bold; 
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+        .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
         .status-pending { background: #fff3e0; color: #ef6c00; }
         .status-shipped { background: #e3f2fd; color: #1976d2; }
         .status-delivered { background: #e8f5e9; color: #2e7d32; }
 
+        .invoice-btn { background: #fff; color: #ff3f6c; border: 1px solid #ff3f6c; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; margin-top: 10px; transition: 0.3s; }
+        .invoice-btn:hover { background: #ff3f6c; color: #fff; }
         .back-btn { background: #000; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h2 style="margin:0;">🛍 My Orders</h2>
+    <h2 style="margin:0;">🛍 My Purchase History</h2>
     <button class="back-btn" onclick="window.location.href='index.html'">← Back to Store</button>
 </div>
 
@@ -58,12 +53,8 @@ const db = firebase.firestore();
 const auth = firebase.auth();
 
 auth.onAuthStateChanged(user => {
-    if (!user) {
-        window.location.href = 'index.html';
-        return;
-    }
+    if (!user) { window.location.href = 'index.html'; return; }
 
-    // Orders-ah real-time-aa fetch pannuvom
     db.collection("orders")
       .where("user", "==", user.email)
       .orderBy("createdAt", "desc")
@@ -71,37 +62,72 @@ auth.onAuthStateChanged(user => {
           const list = document.getElementById("ordersList");
           list.innerHTML = "";
 
-          if (snapshot.empty) {
-              list.innerHTML = "<div style='text-align:center; padding:100px;'><h3>No orders found. Happy Shopping! 🛒</h3></div>";
-              return;
-          }
-
           snapshot.forEach(doc => {
               const data = doc.data();
-              const orderStatus = data.status || "Pending"; // Default is Pending
-              
-              // CSS Class assignment based on status
-              let statusClass = "status-pending";
-              if(orderStatus === "Shipped") statusClass = "status-shipped";
-              if(orderStatus === "Delivered") statusClass = "status-delivered";
+              const orderStatus = data.status || "Pending";
+              let statusClass = orderStatus === "Delivered" ? "status-delivered" : (orderStatus === "Shipped" ? "status-shipped" : "status-pending");
 
               list.innerHTML += `
               <div class="order-card">
                   <img src="${data.imageUrl}" alt="product">
                   <div class="order-info">
                       <h3>${data.productName}</h3>
-                      <p>Amount: ₹${data.price}</p>
-                      <p style="font-size: 11px; color: #999;">Date: ${data.createdAt ? data.createdAt.toDate().toLocaleDateString() : 'Just now'}</p>
-                  </div>
-                  <div>
-                      <span class="status-badge ${statusClass}">
-                          ● ${orderStatus}
-                      </span>
+                      <p>Price: ₹${data.price}</p>
+                      <span class="status-badge ${statusClass}">${orderStatus}</span><br>
+                      <button class="invoice-btn" onclick='downloadInvoice(${JSON.stringify(data)})'>📄 Download Invoice</button>
                   </div>
               </div>`;
           });
       });
 });
+
+/* INVOICE GENERATOR FUNCTION */
+async function downloadInvoice(order) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Bill Header
+    doc.setFontSize(22);
+    doc.setTextColor(255, 63, 108); // Loyal Fashion Pink
+    doc.text("LOYAL FASHION", 20, 20);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text("Tax Invoice / Bill of Supply", 20, 28);
+    doc.text("Date: " + new Date().toLocaleDateString(), 150, 28);
+
+    doc.line(20, 35, 190, 35); // Horizontal Line
+
+    // Buyer Details
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text("Sold To:", 20, 45);
+    doc.setFontSize(10);
+    doc.text(order.buyerName || "Customer", 20, 52);
+    doc.text("Mobile: " + (order.buyerMobile || "N/A"), 20, 58);
+    doc.text("Address: " + (order.buyerAddress || "N/A"), 20, 64, { maxWidth: 80 });
+
+    // Order Details
+    doc.line(20, 80, 190, 80);
+    doc.text("Product Description", 20, 87);
+    doc.text("Total Amount", 150, 87);
+    doc.line(20, 92, 190, 92);
+
+    doc.setFontSize(12);
+    doc.text(order.productName, 20, 105);
+    doc.text("INR " + order.price, 150, 105);
+
+    doc.line(20, 120, 190, 120);
+    doc.setFontSize(14);
+    doc.text("GRAND TOTAL: INR " + order.price, 120, 130);
+
+    // Footer
+    doc.setFontSize(10);
+    doc.setTextColor(150);
+    doc.text("Thank you for shopping with Loyal Fashion!", 20, 160);
+    
+    doc.save("Loyal_Fashion_Invoice.pdf");
+}
 </script>
 </body>
 </html>
