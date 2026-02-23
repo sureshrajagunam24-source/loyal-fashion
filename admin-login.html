@@ -50,6 +50,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+// Login function
 window.login = async function(){
     const email = document.getElementById("email").value.trim().toLowerCase();
     const pass = document.getElementById("password").value;
@@ -58,16 +59,31 @@ window.login = async function(){
     if(!email || !pass){ status.innerText="Fill all fields ❌"; return; }
 
     try{
-        await signInWithEmailAndPassword(auth,email,pass);
-        // redirect to admin dashboard after login
-        window.location.href="admin-dashboard.html";
+        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+        const user = userCredential.user;
+
+        // Admin email check
+        if(user.email === "sureshrajagunam24@gmail.com"){
+            localStorage.setItem("isAdminLoggedIn", "true"); // Session flag
+            alert("Welcome Admin! ✅");
+            window.location.href="admin-dashboard.html";
+        } else {
+            // Oruవేళ buyer email vachu inga login panna try panna block pannanum
+            await auth.signOut();
+            status.innerText="Access Denied: Not an Admin 🚫";
+        }
     }catch(err){
-        console.error(err);
-        status.innerText="Invalid Login ❌";
+        console.error("Login Error:", err.code);
+        if(err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password'){
+            status.innerText="Invalid Email or Password ❌";
+        } else {
+            status.innerText="Login Error ❌";
+        }
     }
 }
 
-function togglePassword(){
+// Password toggle function
+window.togglePassword = function(){
     const pass=document.getElementById("password");
     const btn=document.querySelector(".show-btn");
     if(pass.type==="password"){ pass.type="text"; btn.innerText="Hide"; }
