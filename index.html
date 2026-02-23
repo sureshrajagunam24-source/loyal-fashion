@@ -7,44 +7,32 @@
 <style>
 :root { --primary: #ff3f6c; --dark: #282c3f; --light: #f5f5f6; }
 body{background:#fff;font-family:'Segoe UI', sans-serif;margin:0; overflow-x: hidden; color: var(--dark);}
-
-/* HEADER */
 .header{background:#fff; padding:10px 50px; display:flex; align-items:center; justify-content:space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.05);}
 .logo-section { display:flex; align-items:center; gap:12px; cursor: pointer; }
 .logo-section b { font-size: 20px; color: #000; text-transform: uppercase; }
-
-/* CATEGORY NAV */
 .nav-links { display: flex; gap: 25px; font-weight: bold; font-size: 14px; }
 .nav-links span { cursor: pointer; padding: 10px 0; transition: 0.3s; border-bottom: 2px solid transparent;}
 .nav-links span:hover { color: var(--primary); border-bottom: 2px solid var(--primary); }
-
 .search-container { background: var(--light); padding: 8px 15px; border-radius: 4px; display: flex; align-items: center; width: 300px; }
 .search-container input { background: none; border: none; outline: none; width: 100%; font-size: 13px; }
-
 .action-icons { display: flex; align-items: center; gap: 20px; }
 .icon-btn { text-align: center; cursor: pointer; position: relative; font-size: 12px; font-weight: bold; }
 .avatar-circle { width:32px; height:32px; background:var(--dark); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:16px; margin: 0 auto; }
-
-/* PRODUCT GRID */
 .product-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:30px; padding:40px 50px;}
 .product-card{background:#fff; text-align:left; transition: 0.3s; cursor: pointer; border: 1px solid transparent;}
 .product-card:hover { border: 1px solid #eee; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
 .product-card img{width:100%; height:320px; object-fit:cover; border-radius:4px;}
 .product-info { padding: 15px; }
-
-/* BUTTONS */
+.rating-badge { background: #e8f5e9; color: #2e7d32; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 5px; display: inline-block; }
 .btn-group { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
 .cart-add-btn { background: #fff; color: var(--dark); border: 1px solid #d4d5d9; padding: 10px; font-weight: bold; cursor: pointer; }
 .buy-now-btn { background: var(--dark); color: #fff; border: none; padding: 12px; font-weight: bold; cursor: pointer; }
-
-/* SIDEBAR & MODAL */
 #profileSidebar { position: fixed; top: 0; right: -350px; width: 300px; height: 100%; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 4000; transition: 0.4s; padding: 25px; }
 .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3500; }
 .modal { display:none; position:fixed; top:30%; left:50%; transform:translateX(-50%); background:white; padding:25px; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.2); z-index: 3000; width: 300px;}
 #cartCount { background: var(--primary); color: white; padding: 2px 6px; border-radius: 50%; font-size: 10px; position: absolute; top: -8px; right: 5px; }
 </style>
 </head>
-
 <body>
 
 <div class="header">
@@ -52,27 +40,22 @@ body{background:#fff;font-family:'Segoe UI', sans-serif;margin:0; overflow-x: hi
         <img src="image.png" alt="Logo" width="40" style="border-radius:50%">
         <b>LOYAL FASHION</b>
     </div>
-
     <div class="nav-links">
         <span onclick="filterCategory('ALL')">ALL</span>
         <span onclick="filterCategory('MEN')">MEN</span>
         <span onclick="filterCategory('WOMEN')">WOMEN</span>
         <span onclick="filterCategory('KIDS')">KIDS</span>
     </div>
-
     <div class="search-container">
         <input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="Search for products...">
     </div>
-
     <div class="action-icons">
         <div class="icon-btn" id="loginBtn" onclick="openLogin()">👤<br>Login</div>
         <div class="icon-btn" id="userInfo" style="display:none;" onclick="openProfile()">
             <div class="avatar-circle" id="userLetter"></div>
             <span id="userName">Profile</span>
         </div>
-        <div class="icon-btn" onclick="window.location.href='cart.html'">
-            🛒<span id="cartCount">0</span><br>Cart
-        </div>
+        <div class="icon-btn" onclick="window.location.href='cart.html'">🛒<span id="cartCount">0</span><br>Cart</div>
     </div>
 </div>
 
@@ -81,9 +64,7 @@ body{background:#fff;font-family:'Segoe UI', sans-serif;margin:0; overflow-x: hi
 <div class="sidebar-overlay" id="overlay" onclick="closeProfile()"></div>
 <div id="profileSidebar">
     <button onclick="closeProfile()" style="float:right; border:none; background:none; font-size:20px; cursor:pointer;">✖</button>
-    <div style="text-align:center; margin-top:30px;">
-        <div id="sideLetter" style="width:60px; height:60px; background:var(--primary); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; margin:0 auto;"></div>
-    </div>
+    <div style="text-align:center; margin-top:30px;"><div id="sideLetter" style="width:60px; height:60px; background:var(--primary); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; margin:0 auto;"></div></div>
     <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
     <input type="text" id="sideName" placeholder="Full Name" style="width:90%; padding:10px; margin-bottom:10px;">
     <input type="number" id="sideMobile" placeholder="Mobile" style="width:90%; padding:10px; margin-bottom:10px;">
@@ -98,11 +79,7 @@ body{background:#fff;font-family:'Segoe UI', sans-serif;margin:0; overflow-x: hi
     <input type="email" id="email" placeholder="Email" style="width:90%; padding:10px; margin-bottom:10px;">
     <input type="password" id="password" placeholder="Password" style="width:90%; padding:10px; margin-bottom:10px;">
     <button id="auth-btn" onclick="handleAuth()" style="width:100%; background:var(--primary); color:white; border:none; padding:12px; cursor:pointer; font-weight:bold;">CONTINUE</button>
-    
-    <p id="toggle-text" style="font-size:12px; text-align:center; color:#888; margin-top:15px;">
-        New to Loyal Fashion? <span style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="toggleAuth()">Create Account</span>
-    </p>
-    
+    <p id="toggle-text" style="font-size:12px; text-align:center; color:#888; margin-top:15px;">New to Loyal Fashion? <span style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="toggleAuth()">Create Account</span></p>
     <button onclick="closeLogin()" style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer;">Close</button>
 </div>
 
@@ -126,25 +103,6 @@ const auth=firebase.auth();
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 document.getElementById("cartCount").innerText = cart.length;
 
-/* CATEGORY FILTER */
-window.filterCategory = function(cat) {
-    const cards = document.getElementsByClassName('product-card');
-    for (let card of cards) {
-        const title = card.querySelector('h3').innerText.toUpperCase();
-        card.style.display = (cat === 'ALL' || title.includes(cat)) ? "" : "none";
-    }
-}
-
-/* SEARCH */
-window.searchProducts = function() {
-    const input = document.getElementById('searchInput').value.toUpperCase();
-    const cards = document.getElementsByClassName('product-card');
-    for (let card of cards) {
-        const title = card.querySelector('h3').innerText.toUpperCase();
-        card.style.display = title.includes(input) ? "" : "none";
-    }
-}
-
 auth.onAuthStateChanged(user=>{
     const loginBtn=document.getElementById("loginBtn");
     const userInfo=document.getElementById("userInfo");
@@ -159,46 +117,28 @@ auth.onAuthStateChanged(user=>{
     }
 });
 
-/* AUTH LOGIC (LOGIN & SIGNUP TOGGLE) */
 let isLoginMode = true;
-
 function toggleAuth() {
     isLoginMode = !isLoginMode;
     const title = document.getElementById("auth-title");
     const btn = document.getElementById("auth-btn");
     const toggleText = document.getElementById("toggle-text");
-
     if (isLoginMode) {
-        title.innerText = "Login";
-        btn.innerText = "CONTINUE";
+        title.innerText = "Login"; btn.innerText = "CONTINUE";
         toggleText.innerHTML = 'New to Loyal Fashion? <span style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="toggleAuth()">Create Account</span>';
     } else {
-        title.innerText = "Create Account";
-        btn.innerText = "REGISTER";
+        title.innerText = "Create Account"; btn.innerText = "REGISTER";
         toggleText.innerHTML = 'Already have an account? <span style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="toggleAuth()">Login</span>';
     }
 }
-
 function handleAuth() {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
-
-    if (!email || !password) {
-        alert("Please fill all fields!");
-        return;
-    }
-
+    if (!email || !password) { alert("Please fill all fields!"); return; }
     if (isLoginMode) {
-        auth.signInWithEmailAndPassword(email, password)
-            .then(() => location.reload())
-            .catch(err => alert("Login Error: " + err.message));
+        auth.signInWithEmailAndPassword(email, password).then(() => location.reload()).catch(err => alert(err.message));
     } else {
-        auth.createUserWithEmailAndPassword(email, password)
-            .then(() => {
-                alert("Account Created Successfully! ✅");
-                location.reload();
-            })
-            .catch(err => alert("Signup Error: " + err.message));
+        auth.createUserWithEmailAndPassword(email, password).then(() => { alert("Account Created! ✅"); location.reload(); }).catch(err => alert(err.message));
     }
 }
 
@@ -216,7 +156,6 @@ function openProfile() {
     });
 }
 function closeProfile() { document.getElementById("profileSidebar").style.right = "-350px"; document.getElementById("overlay").style.display = "none"; }
-
 function saveProfile() {
     const user = auth.currentUser;
     const name = document.getElementById("sideName").value;
@@ -224,28 +163,40 @@ function saveProfile() {
     const address = document.getElementById("sideAddress").value;
     db.collection("users").doc(user.uid).set({name, mobile, address, email:user.email}, {merge:true}).then(() => alert("Saved ✅"));
 }
-
 function openLogin() { document.getElementById("loginBox").style.display="block"; }
 function closeLogin() { document.getElementById("loginBox").style.display="none"; }
 
-/* LOAD PRODUCTS */
+/* LOAD PRODUCTS WITH STAR RATINGS */
 db.collection("products").orderBy("createdAt","desc").onSnapshot(snapshot=>{
     const list=document.getElementById("product-list");
     list.innerHTML="";
     snapshot.forEach(doc=>{
         const data=doc.data();
-        list.innerHTML+=`
+        const productId = doc.id;
+        
+        // Product Card HTML
+        const productHtml = `
         <div class="product-card">
             <img src="${data.imageUrl}">
             <div class="product-info">
+                <div id="rate-${productId}" class="rating-badge">⭐ Loading...</div>
                 <h3>${data.productName}</h3>
                 <p>₹${data.price}</p>
                 <div class="btn-group">
-                    <button class="cart-add-btn" onclick="addToCart('${doc.id}','${data.productName}',${data.price},'${data.imageUrl}')">ADD TO CART</button>
-                    <button class="buy-now-btn" onclick="buyNow('${doc.id}','${data.productName}',${data.price},'${data.imageUrl}')">BUY NOW</button>
+                    <button class="cart-add-btn" onclick="addToCart('${productId}','${data.productName}',${data.price},'${data.imageUrl}')">ADD TO CART</button>
+                    <button class="buy-now-btn" onclick="buyNow('${productId}','${data.productName}',${data.price},'${data.imageUrl}')">BUY NOW</button>
                 </div>
             </div>
         </div>`;
+        list.innerHTML += productHtml;
+
+        // Fetch Average Rating for this product
+        db.collection("reviews").where("productName", "==", data.productName).get().then(snap => {
+            let total = 0;
+            snap.forEach(r => total += r.data().rating);
+            let avg = snap.size > 0 ? (total / snap.size).toFixed(1) : "0";
+            document.getElementById(`rate-${productId}`).innerText = `⭐ ${avg} (${snap.size})`;
+        });
     });
 });
 
@@ -260,7 +211,6 @@ window.buyNow = function(id, name, price, image) {
         }).then(() => alert("Order Placed ✅"));
     });
 }
-
 window.addToCart = function(id,name,price,image){
     const user = auth.currentUser;
     if(!user) { openLogin(); return; }
