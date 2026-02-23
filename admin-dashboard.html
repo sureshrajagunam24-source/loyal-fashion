@@ -11,20 +11,22 @@ body{margin:0;font-family:Segoe UI;display:flex;height:100vh;background:#f4f6f9;
 .logo{text-align:center;margin-bottom:40px;}
 .logo img{width:60px;border-radius:50%;}
 .logo h2{margin:10px 0 0 0;}
-.nav-item{padding:15px;margin-bottom:10px;border-radius:8px;cursor:pointer;}
+.nav-item{padding:15px;margin-bottom:10px;border-radius:8px;cursor:pointer; transition: 0.3s;}
 .nav-item:hover{background:#222;color:#ffd700;}
 .nav-item.active{background:#222;color:#ffd700;}
-.logout{margin-top:auto;background:#ff4d4d;text-align:center;}
+.logout{margin-top:auto;background:#ff4d4d;text-align:center; padding: 15px; border-radius: 8px; cursor: pointer;}
 .main{flex:1;padding:40px;overflow:auto;}
 .card{background:#fff;padding:25px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.05);margin-bottom:25px;}
-input{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid #ddd;}
+input{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid #ddd; box-sizing: border-box;}
 button{padding:8px 12px;border:none;border-radius:6px;cursor:pointer;}
-.post-btn{width:100%;background:#007bff;color:#fff;}
+.post-btn{width:100%;background:#007bff;color:#fff; font-weight: bold; padding: 12px;}
 .edit-btn{background:#ffc107;}
 .delete-btn{background:#dc3545;color:#fff;}
 table{width:100%;border-collapse:collapse;}
 th,td{padding:12px;border-bottom:1px solid #eee;text-align:left;}
-img{width:50px;border-radius:8px;}
+img{width:50px;height: 50px; object-fit: cover; border-radius:8px;}
+.tab{display:none;}
+.tab.active-tab{display:block;}
 </style>
 </head>
 
@@ -36,34 +38,34 @@ img{width:50px;border-radius:8px;}
         <h2>LOYAL FASHION</h2>
     </div>
 
-    <div class="nav-item active" onclick="showTab('dashboard')">📊 Dashboard</div>
-    <div class="nav-item" onclick="showTab('addProduct')">➕ Add Product</div>
-    <div class="nav-item" onclick="showTab('inventory')">📦 Inventory</div>
-    <div class="nav-item" onclick="showTab('orders')">🧾 Orders</div>
-    <div class="nav-item logout" onclick="logout()">🚪 Logout</div>
+    <div class="nav-item active" id="nav-dashboard" onclick="showTab('dashboard')">📊 Dashboard</div>
+    <div class="nav-item" id="nav-addProduct" onclick="showTab('addProduct')">➕ Add Product</div>
+    <div class="nav-item" id="nav-inventory" onclick="showTab('inventory')">📦 Inventory</div>
+    <div class="nav-item" id="nav-orders" onclick="showTab('orders')">🧾 Orders</div>
+    <div class="logout" onclick="logout()">🚪 Logout</div>
 </div>
 
 <div class="main">
 
-<div id="dashboard" class="tab">
+<div id="dashboard" class="tab active-tab">
     <div class="card">
         <h2>Dashboard</h2>
         <p>Total Products: <span id="total">0</span></p>
     </div>
 </div>
 
-<div id="addProduct" class="tab" style="display:none;">
+<div id="addProduct" class="tab">
     <div class="card">
-        <h2>Add Product</h2>
+        <h2 id="form-title">Add Product</h2>
         <input type="text" id="pName" placeholder="Product Name">
         <input type="number" id="pPrice" placeholder="Price">
         <input type="file" id="pImage" accept="image/*">
-        <button class="post-btn" onclick="saveProduct()">Save Product</button>
+        <button class="post-btn" id="save-btn" onclick="saveProduct()">Save Product</button>
         <p id="status"></p>
     </div>
 </div>
 
-<div id="inventory" class="tab" style="display:none;">
+<div id="inventory" class="tab">
     <div class="card">
         <h2>Inventory</h2>
         <table>
@@ -80,7 +82,7 @@ img{width:50px;border-radius:8px;}
     </div>
 </div>
 
-<div id="orders" class="tab" style="display:none;">
+<div id="orders" class="tab">
     <div class="card">
         <h2>Buyer Orders</h2>
         <table>
@@ -100,7 +102,6 @@ img{width:50px;border-radius:8px;}
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 import { 
@@ -115,7 +116,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
   authDomain: "e-commerce-wepsite.firebaseapp.com",
   projectId: "e-commerce-wepsite",
   storageBucket: "e-commerce-wepsite.appspot.com",
@@ -129,9 +130,11 @@ const db = getFirestore(app);
 
 let editId = null;
 
-/* AUTH CHECK */
+/* AUTH CHECK WITH SESSION PROTECTION */
 onAuthStateChanged(auth, (user)=>{
-    if(!user || user.email !== "sureshrajagunam24@gmail.com"){
+    const isAdminFlag = localStorage.getItem("isAdminLoggedIn");
+    
+    if(!user || user.email !== "sureshrajagunam24@gmail.com" || isAdminFlag !== "true"){
         window.location.href="admin-login.html";
     } else {
         loadProducts();
@@ -139,70 +142,101 @@ onAuthStateChanged(auth, (user)=>{
     }
 });
 
-/* TAB SWITCH */
-window.showTab = function(tab){
-    document.querySelectorAll('.tab').forEach(t=>t.style.display='none');
-    document.getElementById(tab).style.display='block';
+/* TAB SWITCH LOGIC */
+window.showTab = function(tabId){
+    // Hide all tabs
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active-tab'));
+    // Show selected tab
+    document.getElementById(tabId).classList.add('active-tab');
+    
+    // Update Sidebar CSS
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('nav-' + tabId).classList.add('active');
 }
 
 /* LOGOUT */
 window.logout = function(){
-    signOut(auth);
-    window.location.href="admin-login.html";
+    if(confirm("Are you sure you want to logout?")){
+        signOut(auth).then(() => {
+            localStorage.removeItem("isAdminLoggedIn");
+            window.location.href="admin-login.html";
+        });
+    }
 }
 
-/* SAVE PRODUCT */
-window.saveProduct = function(){
-
-    const name=document.getElementById("pName").value.trim();
-    const price=document.getElementById("pPrice").value.trim();
-    const file=document.getElementById("pImage").files[0];
-    const status=document.getElementById("status");
+/* SAVE / UPDATE PRODUCT */
+window.saveProduct = async function(){
+    const name = document.getElementById("pName").value.trim();
+    const price = document.getElementById("pPrice").value.trim();
+    const file = document.getElementById("pImage").files[0];
+    const status = document.getElementById("status");
 
     if(!name || !price){
-        status.innerText="Fill all fields ❌";
+        status.innerText="Fill name and price ❌";
         return;
     }
 
+    status.innerText = "Processing... ⏳";
+
     if(file){
-        const reader=new FileReader();
+        const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload=async ()=>{
-
-            if(editId){
-                await updateDoc(doc(db,"products",editId),{
-                    productName:name,
-                    price:Number(price),
-                    imageUrl:reader.result
-                });
-                status.innerText="Updated ✅";
-                editId=null;
-            } else {
-                await addDoc(collection(db,"products"),{
-                    productName:name,
-                    price:Number(price),
-                    imageUrl:reader.result,
-                    createdAt: serverTimestamp()
-                });
-                status.innerText="Added ✅";
+        reader.onload = async () => {
+            const imgData = reader.result;
+            try {
+                if(editId){
+                    await updateDoc(doc(db, "products", editId), {
+                        productName: name,
+                        price: Number(price),
+                        imageUrl: imgData
+                    });
+                    status.innerText="Updated Successfully ✅";
+                    editId = null;
+                } else {
+                    await addDoc(collection(db, "products"), {
+                        productName: name,
+                        price: Number(price),
+                        imageUrl: imgData,
+                        createdAt: serverTimestamp()
+                    });
+                    status.innerText="Product Added ✅";
+                }
+                clearForm();
+                setTimeout(() => { status.innerText = ""; }, 3000);
+            } catch (err) {
+                console.error(err);
+                status.innerText = "Error saving product ❌";
             }
-
-            clearForm();
         }
+    } else if(editId) {
+        // Update without changing image
+        try {
+            await updateDoc(doc(db, "products", editId), {
+                productName: name,
+                price: Number(price)
+            });
+            status.innerText="Updated Successfully ✅";
+            editId = null;
+            clearForm();
+            setTimeout(() => { status.innerText = ""; }, 3000);
+        } catch (err) {
+            status.innerText = "Error updating ❌";
+        }
+    } else {
+        status.innerText="Please select an image ❌";
     }
 }
 
 /* LOAD PRODUCTS */
 function loadProducts(){
-    onSnapshot(collection(db,"products"),(snapshot)=>{
-        const table=document.getElementById("product-table");
-        table.innerHTML="";
-        document.getElementById("total").innerText=snapshot.size;
+    onSnapshot(collection(db, "products"), (snapshot) => {
+        const table = document.getElementById("product-table");
+        table.innerHTML = "";
+        document.getElementById("total").innerText = snapshot.size;
 
-        snapshot.forEach(docSnap=>{
-            const data=docSnap.data();
-
-            table.innerHTML+=`
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            table.innerHTML += `
             <tr>
                 <td><img src="${data.imageUrl}"></td>
                 <td>${data.productName}</td>
@@ -211,55 +245,59 @@ function loadProducts(){
                     <button class="edit-btn" onclick="editProduct('${docSnap.id}','${data.productName}','${data.price}')">Edit</button>
                     <button class="delete-btn" onclick="deleteProduct('${docSnap.id}')">Delete</button>
                 </td>
-            </tr>
-            `;
+            </tr>`;
         });
     });
 }
 
 /* LOAD ORDERS */
 function loadOrders(){
-    onSnapshot(collection(db,"orders"),(snapshot)=>{
-        const table=document.getElementById("orders-table");
-        table.innerHTML="";
+    onSnapshot(collection(db, "orders"), (snapshot) => {
+        const table = document.getElementById("orders-table");
+        table.innerHTML = "";
 
-        snapshot.forEach(docSnap=>{
-            const data=docSnap.data();
-
-            table.innerHTML+=`
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            table.innerHTML += `
             <tr>
-                <td><img src="${data.imageUrl}"></td>
+                <td><img src="${data.imageUrl || data.image || 'image.png'}"></td>
                 <td>${data.productName}</td>
                 <td>₹${data.price}</td>
                 <td>${data.user}</td>
-            </tr>
-            `;
+            </tr>`;
         });
     });
 }
 
-/* EDIT */
-window.editProduct=function(id,name,price){
+/* EDIT PRODUCT */
+window.editProduct = function(id, name, price){
     showTab('addProduct');
-    document.getElementById("pName").value=name;
-    document.getElementById("pPrice").value=price;
-    editId=id;
+    document.getElementById("pName").value = name;
+    document.getElementById("pPrice").value = price;
+    document.getElementById("form-title").innerText = "Edit Product";
+    document.getElementById("save-btn").innerText = "Update Product";
+    editId = id;
 }
 
-/* DELETE */
-window.deleteProduct=async function(id){
-    if(confirm("Delete this product?")){
-        await deleteDoc(doc(db,"products",id));
+/* DELETE PRODUCT */
+window.deleteProduct = async function(id){
+    if(confirm("Delete this product? It will disappear for buyers too.")){
+        try {
+            await deleteDoc(doc(db, "products", id));
+        } catch (err) {
+            alert("Error deleting product.");
+        }
     }
 }
 
 /* CLEAR FORM */
-function clearForm(){
-    document.getElementById("pName").value="";
-    document.getElementById("pPrice").value="";
-    document.getElementById("pImage").value="";
+window.clearForm = function(){
+    document.getElementById("pName").value = "";
+    document.getElementById("pPrice").value = "";
+    document.getElementById("pImage").value = "";
+    document.getElementById("form-title").innerText = "Add Product";
+    document.getElementById("save-btn").innerText = "Save Product";
 }
-
 </script>
 
 </body>
