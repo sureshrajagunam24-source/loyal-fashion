@@ -17,7 +17,7 @@ body{margin:0;font-family:Segoe UI;display:flex;height:100vh;background:#f4f6f9;
 .logout{margin-top:auto;background:#ff4d4d;text-align:center; padding: 15px; border-radius: 8px; cursor: pointer;}
 .main{flex:1;padding:40px;overflow:auto;}
 .card{background:#fff;padding:25px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.05);margin-bottom:25px;}
-input{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid #ddd; box-sizing: border-box;}
+input, select{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid #ddd; box-sizing: border-box;}
 button{padding:8px 12px;border:none;border-radius:6px;cursor:pointer;}
 .post-btn{width:100%;background:#007bff;color:#fff; font-weight: bold; padding: 12px;}
 .edit-btn{background:#ffc107;}
@@ -28,10 +28,11 @@ img{width:50px;height: 50px; object-fit: cover; border-radius:8px;}
 .tab{display:none;}
 .tab.active-tab{display:block;}
 
-/* Extra Styles for Buyer Details */
+/* Extra Styles for Buyer Details & Status */
 .buyer-cell { font-size: 13px; line-height: 1.4; }
 .buyer-name { font-weight: bold; color: #ff3f6c; display: block; }
 .buyer-contact { color: #555; font-size: 12px; }
+.status-select { padding: 5px; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; font-weight: bold; }
 </style>
 </head>
 
@@ -97,6 +98,7 @@ img{width:50px;height: 50px; object-fit: cover; border-radius:8px;}
                     <th>Product</th>
                     <th>Price</th>
                     <th>Buyer & Delivery Info</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody id="orders-table"></tbody>
@@ -110,16 +112,7 @@ img{width:50px;height: 50px; object-fit: cover; border-radius:8px;}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 import { 
-    getFirestore, 
-    collection, 
-    addDoc, 
-    doc, 
-    updateDoc, 
-    deleteDoc, 
-    onSnapshot,
-    serverTimestamp,
-    query,
-    orderBy
+    getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, query, orderBy 
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -137,7 +130,6 @@ const db = getFirestore(app);
 
 let editId = null;
 
-/* AUTH CHECK */
 onAuthStateChanged(auth, (user)=>{
     const isAdminFlag = localStorage.getItem("isAdminLoggedIn");
     if(!user || user.email !== "sureshrajagunam24@gmail.com" || isAdminFlag !== "true"){
@@ -148,7 +140,6 @@ onAuthStateChanged(auth, (user)=>{
     }
 });
 
-/* TAB SWITCH LOGIC */
 window.showTab = function(tabId){
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active-tab'));
     document.getElementById(tabId).classList.add('active-tab');
@@ -156,7 +147,6 @@ window.showTab = function(tabId){
     document.getElementById('nav-' + tabId).classList.add('active');
 }
 
-/* LOGOUT */
 window.logout = function(){
     if(confirm("Logout from Admin Panel?")){
         signOut(auth).then(() => {
@@ -166,7 +156,6 @@ window.logout = function(){
     }
 }
 
-/* SAVE / UPDATE PRODUCT */
 window.saveProduct = async function(){
     const name = document.getElementById("pName").value.trim();
     const price = document.getElementById("pPrice").value.trim();
@@ -198,11 +187,11 @@ window.saveProduct = async function(){
             await updateDoc(doc(db, "products", editId), { productName: name, price: Number(price) });
             status.innerText="Updated ✅"; editId = null;
             clearForm();
+            setTimeout(() => { status.innerText = ""; }, 3000);
         } catch (err) { status.innerText = "Error ❌"; }
     } else { status.innerText="Select an image ❌"; }
 }
 
-/* LOAD PRODUCTS */
 function loadProducts(){
     onSnapshot(collection(db, "products"), (snapshot) => {
         const table = document.getElementById("product-table");
@@ -224,7 +213,14 @@ function loadProducts(){
     });
 }
 
-/* LOAD ORDERS WITH BUYER DETAILS */
+/* ORDER STATUS UPDATE LOGIC */
+window.updateOrderStatus = async function(orderId, newStatus) {
+    try {
+        await updateDoc(doc(db, "orders", orderId), { status: newStatus });
+        console.log("Status Updated ✅");
+    } catch (err) { alert("Error updating status!"); }
+}
+
 function loadOrders(){
     const ordersQuery = query(collection(db, "orders"), orderBy("createdAt", "desc"));
     onSnapshot(ordersQuery, (snapshot) => {
@@ -232,7 +228,11 @@ function loadOrders(){
         table.innerHTML = "";
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
-            // Namma buyer side-la save panna details-ah inga display panrom
+            const orderId = docSnap.id;
+            
+            // Status based colors
+            const statusColor = data.status === 'Delivered' ? '#28a745' : (data.status === 'Shipped' ? '#007bff' : '#ef6c00');
+
             table.innerHTML += `
             <tr>
                 <td><img src="${data.imageUrl || 'image.png'}"></td>
@@ -245,6 +245,13 @@ function loadOrders(){
                         📍 ${data.buyerAddress || 'N/A'}<br>
                         📧 <small>${data.user}</small>
                     </div>
+                </td>
+                <td>
+                    <select class="status-select" onchange="updateOrderStatus('${orderId}', this.value)" style="color: ${statusColor}; border-color: ${statusColor};">
+                        <option value="Pending" ${data.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="Shipped" ${data.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                        <option value="Delivered" ${data.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                    </select>
                 </td>
             </tr>`;
         });
@@ -261,9 +268,7 @@ window.editProduct = function(id, name, price){
 }
 
 window.deleteProduct = async function(id){
-    if(confirm("Delete this product?")){
-        await deleteDoc(doc(db, "products", id));
-    }
+    if(confirm("Delete this product?")){ await deleteDoc(doc(db, "products", id)); }
 }
 
 window.clearForm = function(){
