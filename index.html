@@ -13,7 +13,7 @@ body{background:#fff;font-family:'Segoe UI', sans-serif;margin:0; overflow-x: hi
 .logo-section { display:flex; align-items:center; gap:12px; cursor: pointer; }
 .logo-section b { font-size: 20px; color: #000; text-transform: uppercase; }
 
-/* 1. CATEGORY NAV */
+/* CATEGORY NAV */
 .nav-links { display: flex; gap: 25px; font-weight: bold; font-size: 14px; }
 .nav-links span { cursor: pointer; padding: 10px 0; transition: 0.3s; border-bottom: 2px solid transparent;}
 .nav-links span:hover { color: var(--primary); border-bottom: 2px solid var(--primary); }
@@ -94,11 +94,16 @@ body{background:#fff;font-family:'Segoe UI', sans-serif;margin:0; overflow-x: hi
 </div>
 
 <div class="modal" id="loginBox">
-    <h3>Login</h3>
+    <h3 id="auth-title">Login</h3>
     <input type="email" id="email" placeholder="Email" style="width:90%; padding:10px; margin-bottom:10px;">
     <input type="password" id="password" placeholder="Password" style="width:90%; padding:10px; margin-bottom:10px;">
-    <button onclick="login()" style="width:100%; background:var(--primary); color:white; border:none; padding:12px; cursor:pointer;">CONTINUE</button>
-    <button onclick="closeLogin()" style="width:100%; background:none; border:none; margin-top:10px;">Close</button>
+    <button id="auth-btn" onclick="handleAuth()" style="width:100%; background:var(--primary); color:white; border:none; padding:12px; cursor:pointer; font-weight:bold;">CONTINUE</button>
+    
+    <p id="toggle-text" style="font-size:12px; text-align:center; color:#888; margin-top:15px;">
+        New to Loyal Fashion? <span style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="toggleAuth()">Create Account</span>
+    </p>
+    
+    <button onclick="closeLogin()" style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer;">Close</button>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -121,7 +126,7 @@ const auth=firebase.auth();
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 document.getElementById("cartCount").innerText = cart.length;
 
-/* 1. CATEGORY FILTER LOGIC */
+/* CATEGORY FILTER */
 window.filterCategory = function(cat) {
     const cards = document.getElementsByClassName('product-card');
     for (let card of cards) {
@@ -130,7 +135,7 @@ window.filterCategory = function(cat) {
     }
 }
 
-/* SEARCH LOGIC */
+/* SEARCH */
 window.searchProducts = function() {
     const input = document.getElementById('searchInput').value.toUpperCase();
     const cards = document.getElementsByClassName('product-card');
@@ -153,6 +158,49 @@ auth.onAuthStateChanged(user=>{
         userInfo.style.display="none";
     }
 });
+
+/* AUTH LOGIC (LOGIN & SIGNUP TOGGLE) */
+let isLoginMode = true;
+
+function toggleAuth() {
+    isLoginMode = !isLoginMode;
+    const title = document.getElementById("auth-title");
+    const btn = document.getElementById("auth-btn");
+    const toggleText = document.getElementById("toggle-text");
+
+    if (isLoginMode) {
+        title.innerText = "Login";
+        btn.innerText = "CONTINUE";
+        toggleText.innerHTML = 'New to Loyal Fashion? <span style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="toggleAuth()">Create Account</span>';
+    } else {
+        title.innerText = "Create Account";
+        btn.innerText = "REGISTER";
+        toggleText.innerHTML = 'Already have an account? <span style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="toggleAuth()">Login</span>';
+    }
+}
+
+function handleAuth() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!email || !password) {
+        alert("Please fill all fields!");
+        return;
+    }
+
+    if (isLoginMode) {
+        auth.signInWithEmailAndPassword(email, password)
+            .then(() => location.reload())
+            .catch(err => alert("Login Error: " + err.message));
+    } else {
+        auth.createUserWithEmailAndPassword(email, password)
+            .then(() => {
+                alert("Account Created Successfully! ✅");
+                location.reload();
+            })
+            .catch(err => alert("Signup Error: " + err.message));
+    }
+}
 
 function openProfile() {
     document.getElementById("profileSidebar").style.right = "0";
@@ -179,11 +227,8 @@ function saveProfile() {
 
 function openLogin() { document.getElementById("loginBox").style.display="block"; }
 function closeLogin() { document.getElementById("loginBox").style.display="none"; }
-function login() {
-    auth.signInWithEmailAndPassword(document.getElementById("email").value, document.getElementById("password").value)
-    .then(() => location.reload()).catch(err => alert(err.message));
-}
 
+/* LOAD PRODUCTS */
 db.collection("products").orderBy("createdAt","desc").onSnapshot(snapshot=>{
     const list=document.getElementById("product-list");
     list.innerHTML="";
@@ -211,7 +256,7 @@ window.buyNow = function(id, name, price, image) {
         if(!doc.exists || !doc.data().address) { alert("Update Address!"); openProfile(); return; }
         db.collection("orders").add({
             user: user.email, buyerName: doc.data().name, buyerMobile: doc.data().mobile, buyerAddress: doc.data().address, 
-            productName: name, price, imageUrl: image, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            productName: name, price, imageUrl: image, status: "Pending", createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => alert("Order Placed ✅"));
     });
 }
