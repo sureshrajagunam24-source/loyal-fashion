@@ -15,35 +15,46 @@ body{background:#f1f3f6;font-family:Segoe UI;margin:0}
 .cart-btn{background:#28a745;color:#fff;border:none;padding:10px;width:100%;margin-top:5px;cursor:pointer}
 .login-btn{background:#fff;color:#000;padding:8px 15px;border:none;border-radius:5px;cursor:pointer}
 #cartCount{background:red;color:white;padding:4px 8px;border-radius:50%}
-#loginBox{display:none;position:fixed;top:30%;left:40%;background:white;padding:20px;border-radius:10px}
+.modal{
+display:none;
+position:fixed;
+top:30%;
+left:50%;
+transform:translateX(-50%);
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 10px 25px rgba(0,0,0,0.2)
+}
 </style>
 </head>
 
 <body>
 
 <div class="header">
-    <div style="display:flex;align-items:center;gap:10px;">
-        <img src="image.png" width="40" style="border-radius:50%">
-        <b>LOYAL FASHION</b>
-    </div>
+<div style="display:flex;align-items:center;gap:10px;">
+<img src="image.png" width="40" style="border-radius:50%">
+<b>LOYAL FASHION</b>
+</div>
 
-    <div>
-        🛒 <span id="cartCount">0</span>
-        <button onclick="window.location.href='cart.html'">Cart</button>
-        <button class="login-btn" onclick="openLogin()">Login</button>
-    </div>
+<div>
+🛒 <span id="cartCount">0</span>
+<button onclick="window.location.href='cart.html'">Cart</button>
+<button onclick="window.location.href='my-orders.html'">My Orders</button>
+<button class="login-btn" onclick="openLogin()" id="loginBtn">Login</button>
+</div>
 </div>
 
 <div class="product-grid" id="product-list"></div>
 
-<!-- LOGIN BOX -->
-<div id="loginBox">
-    <h3>Buyer Login</h3>
-    <input type="email" id="email" placeholder="Email"><br><br>
-    <input type="password" id="password" placeholder="Password"><br><br>
-    <button onclick="login()">Login</button>
-    <button onclick="signup()">Signup</button>
-    <button onclick="closeLogin()">Close</button>
+<!-- LOGIN MODAL -->
+<div class="modal" id="loginBox">
+<h3>Buyer Login</h3>
+<input type="email" id="email" placeholder="Email"><br><br>
+<input type="password" id="password" placeholder="Password"><br><br>
+<button onclick="login()">Login</button>
+<button onclick="signup()">Signup</button>
+<button onclick="closeLogin()">Close</button>
 </div>
 
 <!-- Firebase -->
@@ -70,21 +81,25 @@ document.getElementById("cartCount").innerText = cart.length;
 
 /* AUTH STATE */
 auth.onAuthStateChanged(user=>{
+const btn=document.getElementById("loginBtn");
+
 if(user){
-document.querySelector(".login-btn").innerText="Logout";
-document.querySelector(".login-btn").onclick=()=>{
+btn.innerText="Logout";
+btn.onclick=()=>{
 auth.signOut();
 alert("Logged Out ✅");
 location.reload();
 }
+}else{
+btn.innerText="Login";
+btn.onclick=openLogin;
 }
 });
 
-/* LOGIN UI */
+/* LOGIN FUNCTIONS */
 function openLogin(){
 document.getElementById("loginBox").style.display="block";
 }
-
 function closeLogin(){
 document.getElementById("loginBox").style.display="none";
 }
@@ -128,17 +143,8 @@ list.innerHTML+=`
 <img src="${data.imageUrl}">
 <h3>${data.productName}</h3>
 <p>₹${data.price}</p>
-
-<button class="cart-btn"
-onclick="addToCart('${doc.id}','${data.productName}',${data.price},'${data.imageUrl}')">
-Add to Cart
-</button>
-
-<button class="buy-btn"
-onclick="buyNow('${doc.id}','${data.productName}',${data.price},'${data.imageUrl}')">
-Buy Now
-</button>
-
+<button class="cart-btn" onclick="addToCart('${doc.id}','${data.productName}',${data.price},'${data.imageUrl}')">Add to Cart</button>
+<button class="buy-btn" onclick="buyNow('${doc.id}','${data.productName}',${data.price},'${data.imageUrl}')">Buy Now</button>
 </div>`;
 });
 });
@@ -172,7 +178,7 @@ user:auth.currentUser.email,
 productId:id,
 productName:name,
 price:price,
-image:image,
+imageUrl:image,
 createdAt:firebase.firestore.FieldValue.serverTimestamp()
 });
 
