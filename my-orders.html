@@ -14,9 +14,9 @@ padding:15px;
 margin-bottom:15px;
 border-radius:10px;
 display:flex;
-gap:15px;
 align-items:center;
-box-shadow:0 5px 10px rgba(0,0,0,0.05)
+gap:15px;
+box-shadow:0 5px 15px rgba(0,0,0,0.05)
 }
 .order-card img{
 width:80px;
@@ -24,22 +24,23 @@ height:80px;
 object-fit:cover;
 border-radius:8px
 }
-.price{font-weight:bold;color:green}
+button{
+padding:6px 12px;
+border:none;
+border-radius:5px;
+cursor:pointer
+}
 </style>
 </head>
-
 <body>
 
 <div class="header">
 <h2>📦 My Orders</h2>
-<div>
-<button onclick="window.location.href='index.html'">Home</button>
-<button onclick="logout()">Logout</button>
-</div>
+<button onclick="window.location.href='index.html'">Back</button>
 </div>
 
 <div class="order-container" id="orderList">
-<p>Loading Orders...</p>
+Loading Orders...
 </div>
 
 <!-- Firebase -->
@@ -61,9 +62,6 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 const auth=firebase.auth();
 
-const orderList=document.getElementById("orderList");
-
-/* AUTH CHECK */
 auth.onAuthStateChanged(user=>{
 if(!user){
 alert("Please Login First");
@@ -71,48 +69,33 @@ window.location.href="index.html";
 return;
 }
 
-loadOrders(user.email);
-});
-
-/* LOAD ORDERS */
-function loadOrders(email){
-
 db.collection("orders")
-.where("user","==",email)
+.where("user","==",user.email)
 .orderBy("createdAt","desc")
 .onSnapshot(snapshot=>{
 
-orderList.innerHTML="";
+const list=document.getElementById("orderList");
+list.innerHTML="";
 
 if(snapshot.empty){
-orderList.innerHTML="<p>No Orders Yet.</p>";
+list.innerHTML="<h3>No Orders Found</h3>";
 return;
 }
 
 snapshot.forEach(doc=>{
 const data=doc.data();
 
-orderList.innerHTML+=`
+list.innerHTML+=`
 <div class="order-card">
-<img src="${data.imageUrl || 'image.png'}">
+<img src="${data.imageUrl}">
 <div>
-<h3>${data.productName}</h3>
-<p class="price">₹${data.price}</p>
-<p>${data.createdAt?.toDate().toLocaleString() || ''}</p>
+<b>${data.productName}</b><br>
+₹${data.price}
 </div>
-</div>
-`;
+</div>`;
 });
-
 });
-}
-
-/* LOGOUT */
-function logout(){
-auth.signOut();
-alert("Logged Out");
-window.location.href="index.html";
-}
+});
 </script>
 
 </body>
