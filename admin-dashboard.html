@@ -39,6 +39,7 @@ img{width:50px;border-radius:8px;}
     <div class="nav-item active" onclick="showTab('dashboard')">📊 Dashboard</div>
     <div class="nav-item" onclick="showTab('addProduct')">➕ Add Product</div>
     <div class="nav-item" onclick="showTab('inventory')">📦 Inventory</div>
+    <div class="nav-item" onclick="showTab('orders')">🧾 Orders</div>
     <div class="nav-item logout" onclick="logout()">🚪 Logout</div>
 </div>
 
@@ -79,6 +80,23 @@ img{width:50px;border-radius:8px;}
     </div>
 </div>
 
+<div id="orders" class="tab" style="display:none;">
+    <div class="card">
+        <h2>Buyer Orders</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Buyer Email</th>
+                </tr>
+            </thead>
+            <tbody id="orders-table"></tbody>
+        </table>
+    </div>
+</div>
+
 </div>
 
 <script type="module">
@@ -97,7 +115,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
+  apiKey: "YOUR_API_KEY",
   authDomain: "e-commerce-wepsite.firebaseapp.com",
   projectId: "e-commerce-wepsite",
   storageBucket: "e-commerce-wepsite.appspot.com",
@@ -117,6 +135,7 @@ onAuthStateChanged(auth, (user)=>{
         window.location.href="admin-login.html";
     } else {
         loadProducts();
+        loadOrders();
     }
 });
 
@@ -192,6 +211,27 @@ function loadProducts(){
                     <button class="edit-btn" onclick="editProduct('${docSnap.id}','${data.productName}','${data.price}')">Edit</button>
                     <button class="delete-btn" onclick="deleteProduct('${docSnap.id}')">Delete</button>
                 </td>
+            </tr>
+            `;
+        });
+    });
+}
+
+/* LOAD ORDERS */
+function loadOrders(){
+    onSnapshot(collection(db,"orders"),(snapshot)=>{
+        const table=document.getElementById("orders-table");
+        table.innerHTML="";
+
+        snapshot.forEach(docSnap=>{
+            const data=docSnap.data();
+
+            table.innerHTML+=`
+            <tr>
+                <td><img src="${data.imageUrl}"></td>
+                <td>${data.productName}</td>
+                <td>₹${data.price}</td>
+                <td>${data.user}</td>
             </tr>
             `;
         });
