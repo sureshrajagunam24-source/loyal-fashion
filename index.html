@@ -1,62 +1,78 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loyal Fashion - Premium Store</title>
-    <style>
-        body{background:#f1f3f6;font-family:Segoe UI;margin:0}
-        .header{background:#000;color:#fff;padding:15px 50px;display:flex;align-items:center;justify-content:space-between}
-        .product-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:25px;padding:30px}
-        .product-card{background:#fff;padding:15px;border-radius:10px;text-align:center}
-        .product-card img{width:100%;height:250px;object-fit:cover;border-radius:8px}
-        .buy-btn{background:#000;color:#fff;border:none;padding:10px;width:100%;margin-top:10px;cursor:pointer}
-        .cart-btn{background:#28a745;color:#fff;border:none;padding:10px;width:100%;margin-top:5px;cursor:pointer}
-        .login-btn{background:#fff;color:#000;padding:8px 15px;border:none;border-radius:5px;font-weight:bold;cursor:pointer}
-        #cartCount{background:red;color:white;padding:4px 8px;border-radius:50%}
-        .modal{display:none;position:fixed;top:30%;left:50%;transform:translateX(-50%);background:white;padding:20px;border-radius:10px;box-shadow:0 10px 25px rgba(0,0,0,0.2);z-index:2000}
-        input{width:90%;padding:10px;margin:10px 0;border-radius:5px;border:1px solid #ccc;}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loyal Fashion - Premium Store</title>
+
+<style>
+body{background:#f1f3f6;font-family:Segoe UI;margin:0}
+.header{background:#000;color:#fff;padding:15px 50px;display:flex;align-items:center;justify-content:space-between}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:25px;padding:30px}
+.product-card{background:#fff;padding:15px;border-radius:10px;text-align:center}
+.product-card img{width:100%;height:250px;object-fit:cover;border-radius:8px}
+.buy-btn{background:#000;color:#fff;border:none;padding:10px;width:100%;margin-top:10px;cursor:pointer}
+.cart-btn{background:#28a745;color:#fff;border:none;padding:10px;width:100%;margin-top:5px;cursor:pointer}
+.login-btn{background:#fff;color:#000;padding:8px 15px;border:none;border-radius:5px;cursor:pointer}
+#cartCount{background:red;color:white;padding:4px 8px;border-radius:50%}
+.modal{
+display:none;
+position:fixed;
+top:30%;
+left:50%;
+transform:translateX(-50%);
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 10px 25px rgba(0,0,0,0.2)
+}
+</style>
 </head>
+
 <body>
 
 <div class="header">
-    <div style="display:flex;align-items:center;gap:10px;">
-        <img src="image.png" width="40" style="border-radius:50%">
-        <b>LOYAL FASHION</b>
-    </div>
-    <div>
-        🛒 <span id="cartCount">0</span>
-        <button onclick="window.location.href='cart.html'">Cart</button>
-        <button onclick="window.location.href='my-orders.html'">My Orders</button>
-        <button class="login-btn" onclick="openLogin()" id="loginBtn">Login</button>
-    </div>
+<div style="display:flex;align-items:center;gap:10px;">
+<img src="image.png" width="40" style="border-radius:50%">
+<b>LOYAL FASHION</b>
+</div>
+
+<div>
+🛒 <span id="cartCount">0</span>
+<button onclick="window.location.href='cart.html'">Cart</button>
+<button onclick="window.location.href='my-orders.html'">My Orders</button>
+<button class="login-btn" onclick="openLogin()" id="loginBtn">Login</button>
+</div>
 </div>
 
 <div class="product-grid" id="product-list"></div>
 
+<!-- LOGIN MODAL -->
 <div class="modal" id="loginBox">
-    <h3>Buyer Login</h3>
-    <input type="email" id="email" placeholder="Email"><br>
-    <input type="password" id="password" placeholder="Password"><br>
-    <button onclick="login()" style="background:black;color:white;padding:10px;width:100%;cursor:pointer;">Login</button><br><br>
-    <button onclick="signup()" style="background:gray;color:white;padding:10px;width:100%;cursor:pointer;">Signup</button><br><br>
-    <button onclick="closeLogin()" style="background:none;border:none;color:red;cursor:pointer;">Close</button>
+<h3>Buyer Login</h3>
+<input type="email" id="email" placeholder="Email"><br><br>
+<input type="password" id="password" placeholder="Password"><br><br>
+<button onclick="login()">Login</button>
+<button onclick="signup()">Signup</button>
+<button onclick="closeLogin()">Close</button>
 </div>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
 <script>
 const firebaseConfig={
-    apiKey:"AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
-    authDomain:"e-commerce-wepsite.firebaseapp.com",
-    projectId:"e-commerce-wepsite",
-    storageBucket:"e-commerce-wepsite.appspot.com",
-    messagingSenderId:"394408704286",
-    appId:"1:394408704286:web:9ad690a946b225ab20f10f"
+apiKey:"AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4",
+authDomain:"e-commerce-wepsite.firebaseapp.com",
+projectId:"e-commerce-wepsite",
+storageBucket:"e-commerce-wepsite.appspot.com",
+messagingSenderId:"394408704286",
+appId:"1:394408704286:web:9ad690a946b225ab20f10f"
 };
+
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 const auth=firebase.auth();
@@ -64,64 +80,112 @@ const auth=firebase.auth();
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 document.getElementById("cartCount").innerText = cart.length;
 
+/* AUTH STATE */
 auth.onAuthStateChanged(user=>{
-    const btn=document.getElementById("loginBtn");
-    if(user && user.email !== "sureshrajagunam24@gmail.com"){
-        btn.innerText="Logout (" + user.email.split('@')[0] + ")";
-        btn.onclick=()=>{ auth.signOut(); location.reload(); }
-    } else {
-        btn.innerText="Login";
-        btn.onclick=openLogin;
-    }
+const btn=document.getElementById("loginBtn");
+
+if(user){
+btn.innerText="Logout";
+btn.onclick=()=>{
+auth.signOut();
+alert("Logged Out ✅");
+location.reload();
+}
+}else{
+btn.innerText="Login";
+btn.onclick=openLogin;
+}
 });
 
-function openLogin(){ document.getElementById("loginBox").style.display="block"; }
-function closeLogin(){ document.getElementById("loginBox").style.display="none"; }
+/* LOGIN FUNCTIONS */
+function openLogin(){
+document.getElementById("loginBox").style.display="block";
+}
+function closeLogin(){
+document.getElementById("loginBox").style.display="none";
+}
 
 function login(){
-    const email=document.getElementById("email").value;
-    const password=document.getElementById("password").value;
-    auth.signInWithEmailAndPassword(email,password).then(()=>{ location.reload(); }).catch(err=>alert(err.message));
+const email=document.getElementById("email").value;
+const password=document.getElementById("password").value;
+
+auth.signInWithEmailAndPassword(email,password)
+.then(()=>{
+alert("Login Success ✅");
+closeLogin();
+})
+.catch(err=>alert(err.message));
 }
 
 function signup(){
-    const email=document.getElementById("email").value;
-    const password=document.getElementById("password").value;
-    auth.createUserWithEmailAndPassword(email,password).then(()=>{ alert("Success"); location.reload(); }).catch(err=>alert(err.message));
+const email=document.getElementById("email").value;
+const password=document.getElementById("password").value;
+
+auth.createUserWithEmailAndPassword(email,password)
+.then(()=>{
+alert("Account Created ✅");
+closeLogin();
+})
+.catch(err=>alert(err.message));
 }
 
-db.collection("products").orderBy("createdAt","desc").onSnapshot(snapshot=>{
-    const list=document.getElementById("product-list");
-    list.innerHTML="";
-    snapshot.forEach(doc=>{
-        const data=doc.data();
-        list.innerHTML+=`<div class="product-card">
-            <img src="${data.imageUrl}">
-            <h3>${data.productName}</h3>
-            <p>₹${data.price}</p>
-            <button class="cart-btn" onclick="addToCart('${doc.id}','${data.productName}',${data.price},'${data.imageUrl}')">Add to Cart</button>
-            <button class="buy-btn" onclick="buyNow('${doc.id}','${data.productName}',${data.price},'${data.imageUrl}')">Buy Now</button>
-        </div>`;
-    });
+/* LOAD PRODUCTS */
+db.collection("products")
+.orderBy("createdAt","desc")
+.onSnapshot(snapshot=>{
+const list=document.getElementById("product-list");
+list.innerHTML="";
+
+snapshot.forEach(doc=>{
+const data=doc.data();
+
+list.innerHTML+=`
+<div class="product-card">
+<img src="${data.imageUrl}">
+<h3>${data.productName}</h3>
+<p>₹${data.price}</p>
+<button class="cart-btn" onclick="addToCart('${doc.id}','${data.productName}',${data.price},'${data.imageUrl}')">Add to Cart</button>
+<button class="buy-btn" onclick="buyNow('${doc.id}','${data.productName}',${data.price},'${data.imageUrl}')">Buy Now</button>
+</div>`;
+});
 });
 
+/* ADD TO CART */
 function addToCart(id,name,price,image){
-    if(auth.currentUser && auth.currentUser.email === "sureshrajagunam24@gmail.com"){ alert("Please use a Buyer account."); return; }
-    if(!auth.currentUser){ alert("Please Login First"); openLogin(); return; }
-    cart.push({id,name,price,image});
-    localStorage.setItem("cart",JSON.stringify(cart));
-    document.getElementById("cartCount").innerText=cart.length;
-    alert("Added to Cart ✅");
+
+if(!auth.currentUser){
+alert("⚠ Please Login First");
+openLogin();
+return;
 }
 
+cart.push({id,name,price,image});
+localStorage.setItem("cart",JSON.stringify(cart));
+document.getElementById("cartCount").innerText=cart.length;
+alert("Added to Cart ✅");
+}
+
+/* BUY NOW */
 function buyNow(id,name,price,image){
-    if(!auth.currentUser || auth.currentUser.email === "sureshrajagunam24@gmail.com"){ alert("Please login as Buyer."); openLogin(); return; }
-    db.collection("orders").add({
-        user:auth.currentUser.email,
-        productId:id, productName:name, price:price, imageUrl:image,
-        createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => { alert("Order Placed Successfully ✅"); });
+
+if(!auth.currentUser){
+alert("⚠ Please Login First");
+openLogin();
+return;
+}
+
+db.collection("orders").add({
+user:auth.currentUser.email,
+productId:id,
+productName:name,
+price:price,
+imageUrl:image,
+createdAt:firebase.firestore.FieldValue.serverTimestamp()
+});
+
+alert("Order Placed Successfully ✅");
 }
 </script>
+
 </body>
 </html>
