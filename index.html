@@ -127,25 +127,26 @@ list.innerHTML+=`
 <img src="${data.imageUrl}">
 <h3>${data.productName}</h3>
 <p>₹${data.price}</p>
-<button class="cart-btn" onclick="addToCart('${doc.id}','${data.productName}',${data.price})">Add to Cart</button>
+<button class="cart-btn" onclick="addToCart('${doc.id}','${data.productName}',${data.price}','${data.imageUrl}')">
 <button class="buy-btn" onclick="buyNow('${doc.id}','${data.productName}',${data.price})">Buy Now</button>
 </div>`;
 });
 });
 
 /* ADD TO CART */
-function addToCart(id,name,price){
+function addToCart(id,name,price,image){
+
 if(!auth.currentUser){
 alert("⚠ Please Login First");
 openLogin();
 return;
 }
 
-cart.push({id,name,price});
+cart.push({id,name,price,image});
 localStorage.setItem("cart",JSON.stringify(cart));
 document.getElementById("cartCount").innerText=cart.length;
 alert("Added to Cart ✅");
-}
+}    
 
 /* BUY NOW */
 function buyNow(id,name,price){
