@@ -76,8 +76,8 @@ appId:"1:394408704286:web:9ad690a946b225ab20f10f"
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 const auth=firebase.auth();
-
-let cart=[];
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+document.getElementById("cartCount").innerText = cart.length;
 
 /* LOGIN */
 function openLogin(){loginBox.style.display="block"}
