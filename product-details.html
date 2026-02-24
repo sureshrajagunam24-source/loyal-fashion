@@ -38,8 +38,10 @@
 
         .btn-group { display: flex; gap: 15px; margin-top: 30px; }
         .btn-group button { flex: 1; padding: 15px; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        .add-cart { background: #fff; border: 1px solid #d4d5d9; color: var(--dark); }
-        .buy-now { background: var(--dark); border: none; color: #fff; }
+        .add-cart { background: #fff; border: 1px solid #d4d5d9; color: var(--dark); transition: 0.3s; }
+        .add-cart:hover { border-color: var(--dark); }
+        .buy-now { background: var(--dark); border: none; color: #fff; transition: 0.3s; }
+        .buy-now:hover { background: #000; }
 
         .action-tray { display: flex; gap: 15px; margin-top: 20px; }
         .circle-btn { width: 45px; height: 45px; border-radius: 50%; border: 1px solid #eee; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -286,11 +288,36 @@ window.prepareBuy = function() {
     window.location.href = "checkout.html"; 
 }
 
+/* MASS UPDATE: FIXED ADD TO CART LOGIC */
 window.addToCart = function() {
     const user = auth.currentUser;
-    if(!user) { alert("Please login first! 👤"); return; }
-    if(productData.sizes && productData.sizes.length > 0 && !selectedSize) { alert("Please select a size first! 👕"); return; }
-    db.collection("cart").add({ user: user.email, productName: productData.productName, price: productData.price, imageUrl: productData.imageUrl, size: selectedSize || "Free Size", createdAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => alert("Added to Cart! 🛒"));
+    if(!user) { 
+        alert("Please login first! 👤"); 
+        return; 
+    }
+    
+    // Check if size is selected (if sizes are available)
+    if(productData.sizes && productData.sizes.length > 0 && !selectedSize) { 
+        alert("Please select a size first! 👕"); 
+        return; 
+    }
+
+    // Push item to Local Storage Cart
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    cart.push({ 
+        id: productId, 
+        name: productData.productName, 
+        price: productData.price, 
+        image: productData.imageUrl, 
+        size: selectedSize || "Free Size" 
+    });
+    
+    localStorage.setItem("cart", JSON.stringify(cart));
+    
+    // Optional: Go direct to cart or show alert
+    if(confirm("Added to Cart! 🛒 Do you want to go to the Cart page now?")) {
+        window.location.href = "cart.html";
+    }
 }
 
 function shareWa() {
