@@ -3,19 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Loyal Fashion - Premium Store</title>
+<title>UTRA FASHION - Premium Store</title>
 <style>
 :root { --primary: #ff3f6c; --dark: #282c3f; --light: #f5f5f6; }
 body{background:#fff;font-family:'Segoe UI', sans-serif;margin:0; overflow-x: hidden; color: var(--dark);}
 
 /* HEADER */
 .header{background:#fff; padding:10px 50px; display:flex; align-items:center; justify-content:space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.05);}
-
-/* Desktop-la top-bar-mobile row thevai illa, so adhai flex-ah maintain panrom */
 .top-bar-mobile { display: contents; } 
 
 .logo-section { display:flex; align-items:center; gap:12px; cursor: pointer; }
-.logo-section b { font-size: 20px; color: #000; text-transform: uppercase; }
+.logo-section b { font-size: 20px; color: #000; text-transform: uppercase; letter-spacing: 1px; }
 
 /* SEARCH BAR */
 .search-container { background: var(--light); padding: 8px 15px; border-radius: 4px; display: flex; align-items: center; width: 350px; border: 1px solid #eee; }
@@ -71,11 +69,11 @@ body{background:#fff;font-family:'Segoe UI', sans-serif;margin:0; overflow-x: hi
     }
 
     .logo-section { margin: 0; gap: 8px; }
-    .logo-section b { font-size: 15px; }
+    .logo-section b { font-size: 16px; }
 
     .action-icons {
         display: flex;
-        gap: 12px;
+        gap: 15px;
         align-items: center;
         order: initial;
     }
@@ -121,7 +119,7 @@ body{background:#fff;font-family:'Segoe UI', sans-serif;margin:0; overflow-x: hi
     <div class="top-bar-mobile">
         <div class="logo-section" onclick="location.reload()">
             <img src="image.png" alt="Logo" width="35" style="border-radius:50%">
-            <b>LOYAL FASHION</b>
+            <b>UTRA FASHION</b>
         </div>
 
         <div class="action-icons">
@@ -136,7 +134,7 @@ body{background:#fff;font-family:'Segoe UI', sans-serif;margin:0; overflow-x: hi
     </div>
 
     <div class="search-container">
-        <input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="Search for products...">
+        <input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="Search in Utra Fashion...">
         <img src="https://cdn-icons-png.flaticon.com/512/149/149852.png" class="search-lens">
     </div>
 
@@ -168,7 +166,7 @@ body{background:#fff;font-family:'Segoe UI', sans-serif;margin:0; overflow-x: hi
     <input type="email" id="email" placeholder="Email" style="width:90%; padding:10px; margin-bottom:10px;">
     <input type="password" id="password" placeholder="Password" style="width:90%; padding:10px; margin-bottom:10px;">
     <button id="auth-btn" onclick="handleAuth()" style="width:100%; background:var(--primary); color:white; border:none; padding:12px; cursor:pointer; font-weight:bold;">CONTINUE</button>
-    <p id="toggle-text" style="font-size:12px; text-align:center; color:#888; margin-top:15px;">New to Loyal Fashion? <span style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="toggleAuth()">Create Account</span></p>
+    <p id="toggle-text" style="font-size:12px; text-align:center; color:#888; margin-top:15px;">New to Utra Fashion? <span style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="toggleAuth()">Create Account</span></p>
     <button onclick="closeLogin()" style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer;">Close</button>
 </div>
 
@@ -292,7 +290,7 @@ function toggleAuth() {
     const toggleText = document.getElementById("toggle-text");
     if (isLoginMode) {
         title.innerText = "Login"; btn.innerText = "CONTINUE";
-        toggleText.innerHTML = 'New to Loyal Fashion? <span style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="toggleAuth()">Create Account</span>';
+        toggleText.innerHTML = 'New to Utra Fashion? <span style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="toggleAuth()">Create Account</span>';
     } else {
         title.innerText = "Create Account"; btn.innerText = "REGISTER";
         toggleText.innerHTML = 'Already have an account? <span style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="toggleAuth()">Login</span>';
