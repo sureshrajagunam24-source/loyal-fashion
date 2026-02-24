@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Orders - Loyal Fashion</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { --primary: #ff3f6c; --dark: #282c3f; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
@@ -73,7 +74,7 @@
         if(user) {
             loadMyOrders(user.email);
         } else {
-            window.location.href = "index.html"; // Login aagala na home page poidum
+            window.location.href = "index.html"; 
         }
     });
 
@@ -93,26 +94,22 @@
                 const orderId = docSnap.id;
                 userOrders.push({ id: orderId, ...data });
                 
-                // Date formatting
                 const dateVal = data.createdAt ? data.createdAt.toDate().toLocaleDateString() : "Just Now";
                 
-                // Status styles
                 let badgeClass = "status-badge";
                 let cancelBtnHTML = `<button class="cancel-btn" onclick="cancelOrder('${orderId}')">Cancel Order</button>`;
                 let billBtnHTML = ``;
 
                 if(data.status === 'Cancelled') {
                     badgeClass += " status-cancelled";
-                    cancelBtnHTML = ``; // Cancel aanaal button thevai illai
+                    cancelBtnHTML = ``; 
                 }
                 
-                // Shipped illai Delivered aanaal dhaan Bill download panna mudiyum
                 if(data.status === 'Shipped' || data.status === 'Delivered') {
-                    cancelBtnHTML = ``; // Ship aana piragu cancel panna mudiyaadhu
-                    billBtnHTML = `<button class="bill-btn" onclick="downloadBill('${orderId}')">📥 Download Bill</button>`;
+                    cancelBtnHTML = ``; 
+                    billBtnHTML = `<button class="bill-btn" onclick="downloadPDFBill('${orderId}')">📥 Download PDF Bill</button>`;
                 }
 
-                // Tracker Logic
                 let s1 = data.status !== 'Cancelled' ? "completed" : "";
                 let s2 = (data.status === 'Shipped' || data.status === 'Delivered') ? "completed" : "";
                 let s3 = data.status === 'Delivered' ? "completed" : "";
@@ -158,7 +155,6 @@
         });
     }
 
-    // BUYER CANCEL ORDER LOGIC
     window.cancelOrder = async function(orderId) {
         if(confirm("Are you sure you want to cancel this order? 🚫")) {
             try {
@@ -170,47 +166,78 @@
         }
     }
 
-    // DOWNLOAD BILL LOGIC
-    window.downloadBill = function(orderId) {
+    // MASS UPDATE: PDF GENERATION LOGIC
+    window.downloadPDFBill = function(orderId) {
         const order = userOrders.find(o => o.id === orderId);
         if(!order) return;
 
-        const billContent = `
-=========================================
-          LOYAL FASHION - INVOICE        
-=========================================
+        const dateStr = order.createdAt ? order.createdAt.toDate().toLocaleDateString() : new Date().toLocaleDateString();
 
-Order ID    : #${orderId.toUpperCase()}
-Date        : ${order.createdAt ? order.createdAt.toDate().toLocaleDateString() : new Date().toLocaleDateString()}
-Status      : ${order.status}
-
-CUSTOMER DETAILS:
------------------
-Name        : ${order.buyerName}
-Mobile      : ${order.buyerMobile}
-Address     : ${order.buyerAddress}
-
-PRODUCT DETAILS:
-----------------
-Item        : ${order.productName}
-Size        : ${order.size}
-
------------------------------------------
-TOTAL AMOUNT : Rs. ${order.price}
------------------------------------------
-
-Thank you for shopping with Loyal Fashion!
-=========================================
+        // Hidden div-la bill design ready panrom
+        const invoiceElement = document.createElement('div');
+        invoiceElement.innerHTML = `
+            <div style="padding: 40px; font-family: 'Segoe UI', sans-serif; color: #333; background: #fff;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #ff3f6c; margin: 0; font-size: 28px; text-transform: uppercase;">Loyal Fashion</h1>
+                    <p style="margin: 5px 0; color: #666; font-size: 14px;">Premium E-Commerce Store</p>
+                </div>
+                
+                <hr style="border: 0; border-top: 2px solid #eee; margin-bottom: 30px;">
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+                    <div>
+                        <p style="margin: 5px 0;"><b>Order ID:</b> #${orderId.toUpperCase()}</p>
+                        <p style="margin: 5px 0;"><b>Order Date:</b> ${dateStr}</p>
+                        <p style="margin: 5px 0;"><b>Payment Mode:</b> Cash On Delivery</p>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 30px; background: #f9f9f9; padding: 15px; border-radius: 8px;">
+                    <h3 style="margin-top: 0; color: #282c3f;">Billed To:</h3>
+                    <p style="margin: 5px 0;"><b>Name:</b> ${order.buyerName}</p>
+                    <p style="margin: 5px 0;"><b>Mobile:</b> ${order.buyerMobile}</p>
+                    <p style="margin: 5px 0;"><b>Address:</b> ${order.buyerAddress}</p>
+                </div>
+                
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+                    <thead>
+                        <tr style="background: #282c3f; color: #fff;">
+                            <th style="padding: 12px; text-align: left;">Product Name</th>
+                            <th style="padding: 12px; text-align: center;">Size</th>
+                            <th style="padding: 12px; text-align: right;">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 15px 12px; border-bottom: 1px solid #eee;"><b>${order.productName}</b></td>
+                            <td style="padding: 15px 12px; text-align: center; border-bottom: 1px solid #eee;">${order.size || 'Free Size'}</td>
+                            <td style="padding: 15px 12px; text-align: right; border-bottom: 1px solid #eee;">₹${order.price}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="text-align: right; font-size: 20px; margin-top: 20px;">
+                    <p style="margin: 0;">Total Amount: <b style="color: #ff3f6c;">₹${order.price}</b></p>
+                </div>
+                
+                <div style="text-align: center; margin-top: 60px; color: #888; font-size: 13px; border-top: 1px solid #eee; padding-top: 20px;">
+                    <p>Thank you for shopping with Loyal Fashion! ❤️</p>
+                    <p>For support, contact: support@loyalfashion.com</p>
+                </div>
+            </div>
         `;
 
-        // Text file-aa download panna
-        const blob = new Blob([billContent], { type: "text/plain" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `Loyal_Fashion_Invoice_${orderId.substring(0,6)}.txt`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // PDF options
+        const opt = {
+            margin:       0.5,
+            filename:     `Loyal_Fashion_Invoice_${orderId.substring(0,6)}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        // Convert to PDF and download
+        html2pdf().set(opt).from(invoiceElement).save();
     }
 </script>
 </body>
