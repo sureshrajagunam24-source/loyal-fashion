@@ -32,6 +32,8 @@
         .invoice-btn { background: #fff; color: var(--primary); border: 1px solid var(--primary); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.3s; }
         .invoice-btn:hover { background: var(--primary); color: #fff; }
         .rate-btn { background: var(--primary); color: #fff; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .cancel-btn { background: #fff; color: #dc3545; border: 1px solid #dc3545; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .cancel-btn:hover { background: #dc3545; color: #fff; }
         .back-btn { background: #000; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
@@ -74,6 +76,7 @@ auth.onAuthStateChanged(user => {
 
           snapshot.forEach(docSnap => {
               const data = docSnap.data();
+              const orderId = docSnap.id;
               const orderStatus = data.status || "Pending";
               
               // Progress Bar Logic
@@ -81,10 +84,14 @@ auth.onAuthStateChanged(user => {
               if(orderStatus === "Shipped") progressWidth = "50%";
               if(orderStatus === "Delivered") progressWidth = "100%";
 
-              // Bill Button Visibility Logic
-              let billButtonHTML = "";
-              if(orderStatus === "Shipped" || orderStatus === "Delivered") {
-                  billButtonHTML = `<button class="invoice-btn" onclick='downloadInvoice(${JSON.stringify(data)})'>📄 Download Bill</button>`;
+              // Logic for Action Buttons (Cancel vs Download Bill)
+              let actionButtonsHTML = "";
+              if(orderStatus === "Pending") {
+                  actionButtonsHTML = `<button class="cancel-btn" onclick="cancelOrder('${orderId}')">❌ Cancel Order</button>`;
+              } else if(orderStatus === "Shipped" || orderStatus === "Delivered") {
+                  actionButtonsHTML = `<button class="invoice-btn" onclick='downloadInvoice(${JSON.stringify(data)})'>📄 Download Bill</button>`;
+              } else if(orderStatus === "Cancelled") {
+                  actionButtonsHTML = `<span style="color:#dc3545; font-weight:bold; font-size:12px;">🚫 Order Cancelled</span>`;
               }
 
               list.innerHTML += `
@@ -94,9 +101,11 @@ auth.onAuthStateChanged(user => {
                       <div class="product-info">
                           <h3>${data.productName}</h3>
                           <p>Order Total: <b>₹${data.price}</b></p>
+                          <p>Status: <b style="color:${orderStatus==='Cancelled'?'#dc3545':'#2e7d32'}">${orderStatus}</b></p>
                       </div>
                   </div>
 
+                  ${orderStatus !== 'Cancelled' ? `
                   <div class="track-container">
                       <div class="track-line"></div>
                       <div class="track-progress" style="width: ${progressWidth}"></div>
@@ -113,10 +122,10 @@ auth.onAuthStateChanged(user => {
                           <div class="dot"></div>
                           <div class="step-text">Delivered</div>
                       </div>
-                  </div>
+                  </div>` : ''}
 
                   <div class="btn-group">
-                      ${billButtonHTML}
+                      ${actionButtonsHTML}
                       ${orderStatus === "Delivered" ? 
                         `<button class="rate-btn" onclick="openRatingModal('${data.productName}')">⭐ Rate & Review</button>` : ''}
                   </div>
@@ -124,6 +133,20 @@ auth.onAuthStateChanged(user => {
           });
       });
 });
+
+/* CANCEL ORDER LOGIC */
+window.cancelOrder = async function(orderId) {
+    if(confirm("Are you sure you want to cancel this order?")) {
+        try {
+            await db.collection("orders").doc(orderId).update({
+                status: "Cancelled"
+            });
+            alert("Order Cancelled Successfully! ⚠️");
+        } catch (err) {
+            alert("Error: " + err.message);
+        }
+    }
+}
 
 /* RATE PRODUCT FUNCTION */
 window.openRatingModal = function(productName) {
