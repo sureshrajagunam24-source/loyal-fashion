@@ -78,7 +78,7 @@ auth.onAuthStateChanged(user => {
                   <div class="wish-info">
                       <h3>${data.productName}</h3>
                   </div>
-                  <button class="add-cart-btn" onclick="moveTocart('${wishId}', '${data.productName}', '${data.imageUrl}')">ADD TO CART</button>
+                  <button class="add-cart-btn" onclick="addToCart('${data.productName}', '${data.imageUrl}')">ADD TO CART</button>
               </div>`;
           });
       });
@@ -91,13 +91,12 @@ window.removeFromWishlist = async function(id) {
     }
 }
 
-/* MOVE TO CART LOGIC */
-window.moveTocart = function(wishId, name, image) {
+/* ADD TO CART FROM WISHLIST */
+window.addToCart = function(name, image) {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    // We don't have price in wishlist schema currently, so we can fetch it or use a default
-    cart.push({ name, image, price: "Check in Cart" }); 
+    cart.push({ name, image, price: "Check in Store" }); 
     localStorage.setItem("cart", JSON.stringify(cart));
-    alert("Moved to Cart! 🛒");
+    alert("Added to Cart! 🛒");
 }
 </script>
 </body>
