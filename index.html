@@ -27,11 +27,16 @@ body{background:#fff;font-family:'Segoe UI', sans-serif;margin:0; overflow-x: hi
 .icon-btn { text-align: center; cursor: pointer; position: relative; font-size: 12px; font-weight: bold; }
 .avatar-circle { width:32px; height:32px; background:var(--dark); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:16px; margin: 0 auto; }
 
-/* PRODUCT GRID */
+/* PRODUCT GRID & STOCK STYLES */
 .product-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:30px; padding:40px 50px;}
-.product-card{background:#fff; text-align:left; transition: 0.3s; cursor: pointer; border: 1px solid transparent; position: relative;}
+.product-card{background:#fff; text-align:left; transition: 0.3s; cursor: pointer; border: 1px solid transparent; position: relative;} /* position:relative mukkiyam */
 .product-card:hover { border: 1px solid #eee; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
 .product-card img{width:100%; height:320px; object-fit:cover; border-radius:4px;}
+
+/* MASS UPDATE: OUT OF STOCK CSS */
+.out-of-stock-badge { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); background: rgba(220, 53, 69, 0.9); color: white; padding: 10px 20px; font-weight: bold; font-size: 18px; border-radius: 4px; z-index: 10; letter-spacing: 1px; width: 80%; text-align: center; pointer-events: none;}
+.dim-image { opacity: 0.5; filter: grayscale(100%); }
+.disabled-btn { background: #ccc !important; color: #666 !important; cursor: not-allowed !important; border: none !important; }
 
 .product-info { padding: 15px; }
 .rating-badge { background: #e8f5e9; color: #2e7d32; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 5px; display: inline-block; }
@@ -125,20 +130,37 @@ db.collection("products").orderBy("createdAt","desc").onSnapshot(snapshot=>{
     renderProducts(allProducts);
 });
 
+/* MASS UPDATE: RENDER PRODUCTS WITH STOCK CHECK */
 function renderProducts(products) {
     const list = document.getElementById("product-list");
     list.innerHTML = "";
     products.forEach(data => {
+        
+        // Stock Check Logic
+        const isInStock = data.inStock !== false; // Default to true if undefined
+
+        const outOfStockHTML = isInStock ? "" : `<div class="out-of-stock-badge">OUT OF STOCK</div>`;
+        const imgClass = isInStock ? "" : "dim-image";
+        const imgClick = isInStock ? `onclick="window.location.href='product-details.html?id=${data.id}'"` : "";
+        const imgCursor = isInStock ? "pointer" : "not-allowed";
+
+        const btnClass = isInStock ? "" : "disabled-btn";
+        const btnActionCart = isInStock ? `onclick="addToCart('${data.id}','${data.productName}',${data.price},'${data.imageUrl}')"` : `disabled`;
+        const btnActionBuy = isInStock ? `onclick="window.location.href='product-details.html?id=${data.id}'"` : `disabled`;
+        const buyBtnText = isInStock ? 'BUY NOW' : 'UNAVAILABLE';
+        const infoStyle = !isInStock ? 'color:#999;' : '';
+
         list.innerHTML += `
         <div class="product-card">
-            <img src="${data.imageUrl}" onclick="window.location.href='product-details.html?id=${data.id}'" style="cursor:pointer;">
+            ${outOfStockHTML}
+            <img src="${data.imageUrl}" class="${imgClass}" ${imgClick} style="cursor:${imgCursor};">
             <div class="product-info">
                 <div id="rate-${data.id}" class="rating-badge">⭐ Loading...</div>
-                <h3>${data.productName}</h3>
-                <p>₹${data.price}</p>
+                <h3 style="${infoStyle}">${data.productName}</h3>
+                <p style="${infoStyle}">₹${data.price}</p>
                 <div class="btn-group">
-                    <button class="cart-add-btn" onclick="addToCart('${data.id}','${data.productName}',${data.price},'${data.imageUrl}')">ADD TO CART</button>
-                    <button class="buy-now-btn" onclick="window.location.href='product-details.html?id=${data.id}'">BUY NOW</button>
+                    <button class="cart-add-btn ${btnClass}" ${btnActionCart}>ADD TO CART</button>
+                    <button class="buy-now-btn ${btnClass}" ${btnActionBuy}">${buyBtnText}</button>
                 </div>
             </div>
         </div>`;
