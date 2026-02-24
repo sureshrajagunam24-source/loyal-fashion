@@ -24,7 +24,7 @@
         input, textarea { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; background: #f9f9f9; transition: 0.3s; }
         input[readonly], textarea[readonly] { background: #f1f1f1; cursor: not-allowed; border-color: transparent; }
         
-        .edit-btn { background: #eee; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.3s; }
+        .edit-btn { background: #eee; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.3s; font-weight: bold; }
         .edit-btn:hover { background: #ddd; }
         
         .place-order-btn { width: 100%; background: var(--dark); color: #fff; padding: 15px; border: none; border-radius: 8px; font-size: 17px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
@@ -45,7 +45,7 @@
     <div class="form-group">
         <label>Full Name</label>
         <div class="input-wrapper">
-            <input type="text" id="bName" placeholder="Loading profile..." readonly>
+            <input type="text" id="bName" placeholder="Name not found" readonly>
             <button class="edit-btn" onclick="toggleEdit('bName')">✏️ Edit</button>
         </div>
     </div>
@@ -53,7 +53,7 @@
     <div class="form-group">
         <label>Mobile Number</label>
         <div class="input-wrapper">
-            <input type="number" id="bMobile" placeholder="Loading mobile..." readonly>
+            <input type="number" id="bMobile" placeholder="Mobile not found" readonly>
             <button class="edit-btn" onclick="toggleEdit('bMobile')">✏️ Edit</button>
         </div>
     </div>
@@ -61,7 +61,7 @@
     <div class="form-group">
         <label>Delivery Address</label>
         <div class="input-wrapper">
-            <textarea id="bAddress" placeholder="Loading address..." readonly></textarea>
+            <textarea id="bAddress" placeholder="Address not found" readonly></textarea>
             <button class="edit-btn" onclick="toggleEdit('bAddress')">✏️ Edit</button>
         </div>
     </div>
@@ -87,6 +87,7 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
+    // 1. Details page-la irundhu vandha data-ah fetch pannuvom
     const buyData = JSON.parse(localStorage.getItem("directBuy"));
 
     if(buyData) {
@@ -102,24 +103,24 @@
         window.location.href = "index.html";
     }
 
-    // AUTO-FILL PROFILE DATA
+    // 2. AUTO-FILL PROFILE DATA WITH MULTI-FIELD CHECK
     auth.onAuthStateChanged(user => {
         if (user) {
             db.collection("users").doc(user.uid).get().then(doc => {
                 if (doc.exists) {
                     const profile = doc.data();
-                    document.getElementById("bName").value = profile.fullName || "";
-                    document.getElementById("bMobile").value = profile.mobile || "";
+                    // Name load aagala-na alternates check pannuvom
+                    document.getElementById("bName").value = profile.fullName || profile.name || profile.displayName || "";
+                    document.getElementById("bMobile").value = profile.mobile || profile.phone || "";
                     document.getElementById("bAddress").value = profile.address || "";
                 } else {
-                    alert("Profile not found. Please fill details manually.");
                     document.querySelectorAll('input, textarea').forEach(el => el.removeAttribute('readonly'));
                 }
             });
         }
     });
 
-    // TOGGLE EDIT FUNCTION
+    // 3. TOGGLE EDIT FUNCTION
     window.toggleEdit = function(id) {
         const input = document.getElementById(id);
         if (input.hasAttribute('readonly')) {
@@ -134,6 +135,7 @@
         }
     }
 
+    // 4. CONFIRM ORDER LOGIC
     window.confirmOrder = async function() {
         const name = document.getElementById("bName").value.trim();
         const mobile = document.getElementById("bMobile").value.trim();
@@ -167,7 +169,7 @@
             });
 
             document.getElementById("msg").innerText = "Order Placed Successfully! 🎉";
-            localStorage.removeItem("directBuy");
+            localStorage.removeItem("directBuy"); 
             
             setTimeout(() => {
                 window.location.href = "my-orders.html";
