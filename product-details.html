@@ -8,29 +8,30 @@
         :root { --primary: #ff3f6c; --dark: #282c3f; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #fff; padding: 20px; }
         
-        /* AJIO STYLE GALLERY LAYOUT */
         .details-container { display: flex; gap: 30px; max-width: 1200px; margin: 30px auto; flex-wrap: wrap; }
-        
         .gallery-section { display: flex; gap: 15px; min-width: 500px; }
         
-        /* Thumbnail Column */
         .thumbnail-column { display: flex; flex-direction: column; gap: 10px; width: 80px; }
-        .thumb-img { 
-            width: 70px; height: 90px; object-fit: cover; cursor: pointer; 
-            border: 1px solid #eee; border-radius: 4px; transition: 0.3s; 
-        }
+        .thumb-img { width: 70px; height: 90px; object-fit: cover; cursor: pointer; border: 1px solid #eee; border-radius: 4px; transition: 0.3s; }
         .thumb-img:hover, .thumb-img.active { border: 2px solid var(--primary); }
 
-        /* Zoom Main Image */
         .image-zoom-container { position: relative; width: 450px; height: 550px; overflow: hidden; border-radius: 8px; border: 1px solid #eee; cursor: zoom-in; }
         .image-zoom-container img { width: 100%; height: 100%; object-fit: contain; transition: transform 0.2s ease-out; }
         .image-zoom-container:hover img { transform: scale(2); }
 
         .details-section { flex: 1; min-width: 300px; }
         .details-section h1 { font-size: 26px; margin: 0 0 10px; color: var(--dark); }
-        .price { font-size: 24px; font-weight: bold; color: #000; margin-bottom: 20px; }
+        .price { font-size: 24px; font-weight: bold; color: #000; margin-bottom: 10px; }
         
         .rating-badge { background: #e8f5e9; color: #2e7d32; padding: 5px 10px; border-radius: 4px; font-weight: bold; display: inline-block; margin-bottom: 20px; }
+
+        /* SIZE BUTTONS STYLE */
+        .size-section { margin: 20px 0; }
+        .size-title { font-weight: bold; margin-bottom: 10px; display: block; }
+        .size-options { display: flex; gap: 10px; }
+        .size-btn { padding: 10px 18px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-weight: bold; border-radius: 4px; transition: 0.3s; }
+        .size-btn:hover { border-color: var(--primary); }
+        .size-btn.active { background: var(--dark); color: #fff; border-color: var(--dark); }
 
         .btn-group { display: flex; gap: 15px; margin-top: 30px; }
         .btn-group button { flex: 1; padding: 15px; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 16px; }
@@ -51,9 +52,7 @@
 
 <div class="details-container">
     <div class="gallery-section">
-        <div class="thumbnail-column" id="thumbnail-list">
-            </div>
-        
+        <div class="thumbnail-column" id="thumbnail-list"></div>
         <div class="image-zoom-container" onmousemove="zoom(event)" onmouseleave="resetZoom()">
             <img id="mainImg" src="">
         </div>
@@ -64,6 +63,12 @@
         <h1 id="p-name">Product Name</h1>
         <div class="price" id="p-price">₹0</div>
         
+        <div class="size-section" id="size-area">
+            <span class="size-title">SELECT SIZE</span>
+            <div class="size-options" id="size-list">
+                </div>
+        </div>
+
         <p style="color: #666; line-height: 1.6;">Premium quality material. Made for comfort and style. Part of the Loyal Fashion exclusive collection.</p>
 
         <div class="action-tray">
@@ -75,7 +80,7 @@
 
         <div class="btn-group">
             <button class="add-cart" onclick="addToCart()">ADD TO CART</button>
-            <button class="buy-now" onclick="buyNow()">BUY NOW</button>
+            <button class="buy-now" onclick="prepareBuy()">BUY NOW</button>
         </div>
     </div>
 </div>
@@ -93,25 +98,28 @@ const auth = firebase.auth();
 const urlParams = new URLSearchParams(window.location.search);
 const productId = urlParams.get('id');
 let productData = {};
+let selectedSize = ""; // User select panna size inga save aagum
 
-/* FETCH 6 IMAGES GALLERY */
 if(productId) {
     db.collection("products").doc(productId).get().then(doc => {
         if(doc.exists) {
             productData = doc.data();
             document.getElementById("p-name").innerText = productData.productName;
             document.getElementById("p-price").innerText = "₹" + productData.price;
+            document.getElementById("mainImg").src = productData.imageUrl;
             
-            // Setting Gallery
-            const images = [
-                productData.imageUrl, 
-                productData.imageUrl2, 
-                productData.imageUrl3, 
-                productData.imageUrl4, 
-                productData.imageUrl5, 
-                productData.imageUrl6
-            ];
+            // LOAD SIZES FROM FIRESTORE
+            const sizeList = document.getElementById("size-list");
+            if(productData.sizes && productData.sizes.length > 0) {
+                productData.sizes.forEach(size => {
+                    sizeList.innerHTML += `<button class="size-btn" onclick="selectSize(this, '${size}')">${size}</button>`;
+                });
+            } else {
+                document.getElementById("size-area").style.display = "none";
+            }
 
+            // Gallery logic...
+            const images = [productData.imageUrl, productData.imageUrl2, productData.imageUrl3, productData.imageUrl4, productData.imageUrl5, productData.imageUrl6];
             let thumbHTML = '';
             images.forEach((img, idx) => {
                 if(img && img.trim() !== "") {
@@ -119,9 +127,8 @@ if(productId) {
                 }
             });
             document.getElementById("thumbnail-list").innerHTML = thumbHTML;
-            document.getElementById("mainImg").src = productData.imageUrl;
-            
-            // Ratings fetch
+
+            // Ratings fetch...
             db.collection("reviews").where("productName", "==", productData.productName).get().then(snap => {
                 let total = 0;
                 snap.forEach(r => total += r.data().rating);
@@ -132,14 +139,19 @@ if(productId) {
     });
 }
 
-/* GALLERY CONTROL */
+// SIZE SELECTION FUNCTION
+window.selectSize = function(btn, size) {
+    selectedSize = size;
+    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
 window.changeImg = function(el, src) {
     document.getElementById("mainImg").src = src;
     document.querySelectorAll('.thumb-img').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
 }
 
-/* ZOOM LOGIC */
 function zoom(e) {
     const zoomer = e.currentTarget;
     const img = zoomer.querySelector('img');
@@ -149,17 +161,19 @@ function zoom(e) {
 }
 function resetZoom() { document.getElementById("mainImg").style.transformOrigin = `center`; }
 
-/* ACTIONS */
-function shareWa() {
-    const text = `Mass product on Loyal Fashion! 🔥\n\n🛍 *${productData.productName}*\n💰 Price: ₹${productData.price}\n\nLink: ${window.location.href}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+// CHECK SIZE BEFORE BUY
+window.prepareBuy = function() {
+    if(productData.sizes && productData.sizes.length > 0 && !selectedSize) {
+        alert("Please select a size first! 👕");
+        return;
+    }
+    // Proceed to buy logic here
+    alert("Buying " + productData.productName + " (Size: " + selectedSize + ")");
 }
-function addFav() {
-    const user = auth.currentUser;
-    if(!user) { alert("Please Login First! 👤"); return; }
-    db.collection("wishlist").add({
-        user: user.email, productName: productData.productName, imageUrl: productData.imageUrl, createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => alert("Added to Wishlist! ❤️"));
+
+function shareWa() {
+    const text = `Check this out on Loyal Fashion! 🔥\n\n🛍 *${productData.productName}*\n💰 Price: ₹${productData.price}\n\nLink: ${window.location.href}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }
 </script>
 </body>
