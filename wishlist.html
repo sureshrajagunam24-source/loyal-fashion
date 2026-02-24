@@ -33,6 +33,18 @@
         .empty-msg h3 { color: var(--dark); margin-bottom: 10px; font-size: 22px; }
         .empty-msg p { color: #888; margin-bottom: 20px; }
         .shop-now-btn { background: var(--primary); color: #fff; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        /* =========================================
+           MASS UPDATE: MOBILE RESPONSIVE DESIGN 📱
+           ========================================= */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .header { padding: 15px; flex-direction: column; gap: 15px; text-align: center; margin-bottom: 15px; }
+            .wish-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+            .wish-card img { height: 220px; }
+            .empty-msg { padding: 40px 15px; }
+            .empty-msg h3 { font-size: 18px; }
+        }
     </style>
 </head>
 <body>
