@@ -16,7 +16,6 @@ body{margin:0;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;displa
 .main{flex:1;padding:40px;overflow:auto;}
 .card{background:#fff;padding:25px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.05);margin-bottom:25px;}
 
-/* Form & Table Styles */
 input, select{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid #ddd; box-sizing: border-box;}
 button{padding:10px 15px;border:none;border-radius:6px;cursor:pointer; font-weight: bold;}
 .post-btn{width:100%;background:#007bff;color:#fff; padding: 12px; margin-top: 10px;}
@@ -29,10 +28,10 @@ th,td{padding:15px;border-bottom:1px solid #eee;text-align:left;}
 .tab{display:none;}
 .tab.active-tab{display:block;}
 
-/* Buyer Details Styles */
 .buyer-info-box { font-size: 13px; line-height: 1.5; }
 .buyer-name { font-weight: bold; color: #ff3f6c; font-size: 15px; display: block; margin-bottom: 3px; }
 .status-select { padding: 8px; border-radius: 4px; font-weight: bold; border: 1px solid #ddd; cursor: pointer; }
+label { font-size: 12px; font-weight: bold; color: #555; margin-top: 5px; display: block; }
 </style>
 </head>
 
@@ -60,31 +59,33 @@ th,td{padding:15px;border-bottom:1px solid #eee;text-align:left;}
 
     <div id="addProduct" class="tab">
         <div class="card">
-    <h2 id="form-title">Add New Product (6 Gallery Images)</h2>
-    <input type="text" id="pName" placeholder="Product Name">
-    <input type="number" id="pPrice" placeholder="Price (₹)">
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div>
-            <label>1. Main Image (Front):</label>
-            <input type="file" id="pImage1" accept="image/*">
-            <label>2. Side View:</label>
-            <input type="file" id="pImage2" accept="image/*">
-            <label>3. Back View:</label>
-            <input type="file" id="pImage3" accept="image/*">
-        </div>
-        <div>
-            <label>4. Detail View 1:</label>
-            <input type="file" id="pImage4" accept="image/*">
-            <label>5. Detail View 2:</label>
-            <input type="file" id="pImage5" accept="image/*">
-            <label>6. Label/Tag View:</label>
-            <input type="file" id="pImage6" accept="image/*">
+            <h2 id="form-title">Add New Product (6 Gallery Images)</h2>
+            <input type="text" id="pName" placeholder="Product Name">
+            <input type="number" id="pPrice" placeholder="Price (₹)">
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label>1. Main Image (Front):</label>
+                    <input type="file" id="pImage1" accept="image/*">
+                    <label>2. Side View:</label>
+                    <input type="file" id="pImage2" accept="image/*">
+                    <label>3. Back View:</label>
+                    <input type="file" id="pImage3" accept="image/*">
+                </div>
+                <div>
+                    <label>4. Detail View 1:</label>
+                    <input type="file" id="pImage4" accept="image/*">
+                    <label>5. Detail View 2:</label>
+                    <input type="file" id="pImage5" accept="image/*">
+                    <label>6. Label/Tag View:</label>
+                    <input type="file" id="pImage6" accept="image/*">
+                </div>
+            </div>
+            
+            <button class="post-btn" id="save-btn" onclick="saveProduct()">Save Product with 6 Images</button>
+            <p id="status-msg" style="text-align:center; font-weight:bold; margin-top:10px;"></p>
         </div>
     </div>
-    
-    <button class="post-btn" id="save-btn" onclick="saveProduct()">Save Product with 6 Images</button>
-</div>
 
     <div id="inventory" class="tab">
         <div class="card">
@@ -161,28 +162,54 @@ window.logout = function(){
 window.saveProduct = async function(){
     const name = document.getElementById("pName").value.trim();
     const price = document.getElementById("pPrice").value.trim();
-    const file = document.getElementById("pImage").files[0];
     const status = document.getElementById("status-msg");
 
-    if(!name || !price){ status.innerText="Fill all fields! ❌"; return; }
-    status.innerText = "Processing... ⏳";
+    // Array to hold files
+    const files = [];
+    for(let i=1; i<=6; i++) {
+        const fileInput = document.getElementById("pImage" + i);
+        files.push(fileInput.files[0] || null);
+    }
 
-    if(file){
+    if(!name || !price || !files[0]){ 
+        status.innerText="Product Name, Price and Main Image are mandatory! ❌"; 
+        return; 
+    }
+    status.innerText = "Processing 6 Images... ⏳";
+
+    const toBase64 = file => new Promise((resolve) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = async () => {
-            const imgData = reader.result;
-            if(editId){
-                await updateDoc(doc(db, "products", editId), { productName: name, price: Number(price), imageUrl: imgData });
-                editId = null;
-            } else {
-                await addDoc(collection(db, "products"), { productName: name, price: Number(price), imageUrl: imgData, createdAt: serverTimestamp() });
-            }
-            clearForm(); status.innerText="Success ✅";
+        reader.onload = () => resolve(reader.result);
+    });
+
+    try {
+        const imgData = await Promise.all(files.map(f => f ? toBase64(f) : ""));
+
+        const productObj = {
+            productName: name,
+            price: Number(price),
+            imageUrl: imgData[0],
+            imageUrl2: imgData[1],
+            imageUrl3: imgData[2],
+            imageUrl4: imgData[3],
+            imageUrl5: imgData[4],
+            imageUrl6: imgData[5],
+            createdAt: serverTimestamp()
+        };
+
+        if(editId){
+            await updateDoc(doc(db, "products", editId), productObj);
+            editId = null;
+            status.innerText="Product Updated Successfully! ✅";
+        } else {
+            await addDoc(collection(db, "products"), productObj);
+            status.innerText="Product Added Successfully! ✅";
         }
-    } else if(editId) {
-        await updateDoc(doc(db, "products", editId), { productName: name, price: Number(price) });
-        editId = null; clearForm(); status.innerText="Updated ✅";
+        clearForm();
+    } catch (err) {
+        console.error(err);
+        status.innerText="Error: Might be file size too large! ❌";
     }
 }
 
@@ -193,17 +220,23 @@ function loadProducts(){
         document.getElementById("total").innerText = snapshot.size;
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
-            table.innerHTML += `<tr><td><img src="${data.imageUrl}" class="order-img"></td><td>${data.productName}</td><td>₹${data.price}</td><td><button class="edit-btn" onclick="editProduct('${docSnap.id}','${data.productName}','${data.price}')">Edit</button><button class="delete-btn" onclick="deleteProduct('${docSnap.id}')">Delete</button></td></tr>`;
+            table.innerHTML += `<tr>
+                <td><img src="${data.imageUrl}" class="order-img"></td>
+                <td>${data.productName}</td>
+                <td>₹${data.price}</td>
+                <td>
+                    <button class="edit-btn" onclick="editProduct('${docSnap.id}','${data.productName}','${data.price}')">Edit</button>
+                    <button class="delete-btn" onclick="deleteProduct('${docSnap.id}')">Delete</button>
+                </td>
+            </tr>`;
         });
     });
 }
 
-/* UPDATE STATUS LOGIC */
 window.updateOrderStatus = async function(orderId, newStatus) {
     try {
         await updateDoc(doc(db, "orders", orderId), { status: newStatus });
-        console.log("Status Updated to: " + newStatus);
-    } catch (err) { alert("Firebase Rule Error: Update permission missing!"); }
+    } catch (err) { alert("Error updating status!"); }
 }
 
 function loadOrders(){
@@ -223,7 +256,9 @@ function loadOrders(){
                 <td>₹${data.price}</td>
                 <td class="buyer-info-box">
                     <span class="buyer-name">${data.buyerName || 'Unknown'}</span>
-                    📞 ${data.buyerMobile || 'N/A'}<br>📍 ${data.buyerAddress || 'N/A'}<br>📧 <small>${data.user}</small>
+                    📞 ${data.buyerMobile || 'N/A'}<br>
+                    📍 ${data.buyerAddress || 'N/A'}<br>
+                    📧 <small>${data.user}</small>
                 </td>
                 <td>
                     <select class="status-select" onchange="updateOrderStatus('${orderId}', this.value)" style="color:${statusColor}; border-color:${statusColor};">
@@ -237,9 +272,22 @@ function loadOrders(){
     });
 }
 
-window.editProduct = function(id, name, price){ showTab('addProduct'); document.getElementById("pName").value = name; document.getElementById("pPrice").value = price; editId = id; }
-window.deleteProduct = async function(id){ if(confirm("Delete product?")) await deleteDoc(doc(db, "products", id)); }
-window.clearForm = function(){ document.getElementById("pName").value=""; document.getElementById("pPrice").value=""; document.getElementById("pImage").value=""; }
+window.editProduct = function(id, name, price){ 
+    showTab('addProduct'); 
+    document.getElementById("pName").value = name; 
+    document.getElementById("pPrice").value = price; 
+    editId = id; 
+}
+window.deleteProduct = async function(id){ 
+    if(confirm("Delete product?")) await deleteDoc(doc(db, "products", id)); 
+}
+window.clearForm = function(){ 
+    document.getElementById("pName").value=""; 
+    document.getElementById("pPrice").value=""; 
+    for(let i=1; i<=6; i++){
+        document.getElementById("pImage" + i).value = "";
+    }
+}
 </script>
 </body>
 </html>
