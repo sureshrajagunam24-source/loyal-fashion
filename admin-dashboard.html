@@ -60,14 +60,31 @@ th,td{padding:15px;border-bottom:1px solid #eee;text-align:left;}
 
     <div id="addProduct" class="tab">
         <div class="card">
-            <h2 id="form-title">Add New Product</h2>
-            <input type="text" id="pName" placeholder="Product Name">
-            <input type="number" id="pPrice" placeholder="Price (₹)">
-            <input type="file" id="pImage" accept="image/*">
-            <button class="post-btn" id="save-btn" onclick="saveProduct()">Save Product</button>
-            <p id="status-msg" style="text-align:center; font-weight:bold; margin-top:10px;"></p>
+    <h2 id="form-title">Add New Product (6 Gallery Images)</h2>
+    <input type="text" id="pName" placeholder="Product Name">
+    <input type="number" id="pPrice" placeholder="Price (₹)">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+            <label>1. Main Image (Front):</label>
+            <input type="file" id="pImage1" accept="image/*">
+            <label>2. Side View:</label>
+            <input type="file" id="pImage2" accept="image/*">
+            <label>3. Back View:</label>
+            <input type="file" id="pImage3" accept="image/*">
+        </div>
+        <div>
+            <label>4. Detail View 1:</label>
+            <input type="file" id="pImage4" accept="image/*">
+            <label>5. Detail View 2:</label>
+            <input type="file" id="pImage5" accept="image/*">
+            <label>6. Label/Tag View:</label>
+            <input type="file" id="pImage6" accept="image/*">
         </div>
     </div>
+    
+    <button class="post-btn" id="save-btn" onclick="saveProduct()">Save Product with 6 Images</button>
+</div>
 
     <div id="inventory" class="tab">
         <div class="card">
