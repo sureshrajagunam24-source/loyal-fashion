@@ -13,23 +13,27 @@ body{background:#fff;font-family:'Segoe UI', sans-serif;margin:0; overflow-x: hi
 .logo-section { display:flex; align-items:center; gap:12px; cursor: pointer; }
 .logo-section b { font-size: 20px; color: #000; text-transform: uppercase; }
 
-/* SEARCH BAR WITH CAMERA */
-.search-container { background: var(--light); padding: 8px 15px; border-radius: 4px; display: flex; align-items: center; width: 350px; position: relative; }
+/* SEARCH BAR WITH LENS ICON */
+.search-container { background: var(--light); padding: 8px 15px; border-radius: 4px; display: flex; align-items: center; width: 350px; position: relative; border: 1px solid #eee; }
 .search-container input { background: none; border: none; outline: none; width: 100%; font-size: 13px; }
-.camera-icon { cursor: pointer; font-size: 18px; color: #666; margin-left: 10px; transition: 0.3s; }
-.camera-icon:hover { color: var(--primary); }
+.search-lens { width: 18px; height: 18px; cursor: pointer; opacity: 0.6; transition: 0.3s; margin-left: 10px; }
+.search-lens:hover { opacity: 1; }
+
+.nav-links { display: flex; gap: 25px; font-weight: bold; font-size: 14px; }
+.nav-links span { cursor: pointer; padding: 10px 0; transition: 0.3s; border-bottom: 2px solid transparent;}
+.nav-links span:hover { color: var(--primary); border-bottom: 2px solid var(--primary); }
 
 .action-icons { display: flex; align-items: center; gap: 20px; }
 .icon-btn { text-align: center; cursor: pointer; position: relative; font-size: 12px; font-weight: bold; }
 .avatar-circle { width:32px; height:32px; background:var(--dark); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:16px; margin: 0 auto; }
 
-/* PRODUCT GRID */
+/* PRODUCT GRID & WISHLIST */
 .product-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:30px; padding:40px 50px;}
 .product-card{background:#fff; text-align:left; transition: 0.3s; cursor: pointer; border: 1px solid transparent; position: relative;}
 .product-card:hover { border: 1px solid #eee; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
 .product-card img{width:100%; height:320px; object-fit:cover; border-radius:4px;}
 
-/* WISHLIST BUTTON ❤️ */
+/* HEART ICON */
 .wish-btn { position: absolute; top: 15px; right: 15px; background: white; border: none; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 10; transition: 0.3s; }
 .wish-btn:hover { transform: scale(1.1); color: var(--primary); }
 
@@ -40,7 +44,6 @@ body{background:#fff;font-family:'Segoe UI', sans-serif;margin:0; overflow-x: hi
 .cart-add-btn { background: #fff; color: var(--dark); border: 1px solid #d4d5d9; padding: 10px; font-weight: bold; cursor: pointer; }
 .buy-now-btn { background: var(--dark); color: #fff; border: none; padding: 12px; font-weight: bold; cursor: pointer; }
 
-/* SIDEBAR & MODAL */
 #profileSidebar { position: fixed; top: 0; right: -350px; width: 300px; height: 100%; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 4000; transition: 0.4s; padding: 25px; }
 .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3500; }
 .modal { display:none; position:fixed; top:30%; left:50%; transform:translateX(-50%); background:white; padding:25px; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.2); z-index: 3000; width: 300px;}
@@ -61,11 +64,10 @@ body{background:#fff;font-family:'Segoe UI', sans-serif;margin:0; overflow-x: hi
         <span onclick="filterCategory('WOMEN')">WOMEN</span>
         <span onclick="filterCategory('KIDS')">KIDS</span>
     </div>
-    
+
     <div class="search-container">
         <input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="Search for products...">
-        <label for="imgSearch" class="camera-icon">📷</label>
-        <input type="file" id="imgSearch" style="display:none;" accept="image/*" onchange="searchByImage(event)">
+        <img src="https://cdn-icons-png.flaticon.com/512/149/149852.png" class="search-lens" onclick="searchProducts()">
     </div>
 
     <div class="action-icons">
@@ -165,12 +167,6 @@ window.toggleWishlist = function(id, name, img) {
     }).then(() => alert("Added to Wishlist! ❤️"));
 }
 
-/* IMAGE SEARCH SIMULATION */
-window.searchByImage = function(event) {
-    alert("Image Search Feature Activated! Analyzing Image... 📷");
-    // Visual Search logic future-la add pannalaam
-}
-
 /* SEARCH & FILTER */
 window.searchProducts = function() {
     const input = document.getElementById('searchInput').value.toUpperCase();
@@ -236,6 +232,7 @@ db.collection("products").orderBy("createdAt","desc").onSnapshot(snapshot=>{
             </div>
         </div>`;
 
+        // Ratings Logic
         db.collection("reviews").where("productName", "==", data.productName).get().then(snap => {
             let total = 0;
             snap.forEach(r => total += r.data().rating);
