@@ -32,7 +32,6 @@
         .size-btn:hover { border-color: var(--primary); }
         .size-btn.active { background: var(--dark); color: #fff; border-color: var(--dark); }
 
-        /* DESCRIPTION STYLE */
         .desc-container { margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px; }
         .desc-title { font-weight: bold; font-size: 16px; margin-bottom: 10px; display: block; color: var(--dark); }
         .desc-text { color: #666; line-height: 1.6; font-size: 14px; white-space: pre-wrap; }
@@ -74,7 +73,7 @@
 
         <div class="desc-container">
             <span class="desc-title">Product Details</span>
-            <p id="p-desc" class="desc-text">Premium quality material. Made for comfort and style. Part of the Loyal Fashion exclusive collection.</p>
+            <p id="p-desc" class="desc-text"></p>
         </div>
 
         <div class="action-tray">
@@ -114,12 +113,10 @@ if(productId) {
             document.getElementById("p-price").innerText = "₹" + productData.price;
             document.getElementById("mainImg").src = productData.imageUrl;
             
-            // LOAD DESCRIPTION
-            if(productData.description) {
-                document.getElementById("p-desc").innerText = productData.description;
-            }
+            // Description load pannuvom
+            document.getElementById("p-desc").innerText = productData.description || "Premium quality material. Part of the Loyal Fashion exclusive collection.";
             
-            // LOAD SIZES
+            // Sizes load pannuvom
             const sizeList = document.getElementById("size-list");
             if(productData.sizes && productData.sizes.length > 0) {
                 productData.sizes.forEach(size => {
@@ -129,7 +126,7 @@ if(productId) {
                 document.getElementById("size-area").style.display = "none";
             }
 
-            // Gallery logic
+            // Gallery Thumbnails
             const images = [productData.imageUrl, productData.imageUrl2, productData.imageUrl3, productData.imageUrl4, productData.imageUrl5, productData.imageUrl6];
             let thumbHTML = '';
             images.forEach((img, idx) => {
@@ -139,7 +136,7 @@ if(productId) {
             });
             document.getElementById("thumbnail-list").innerHTML = thumbHTML;
 
-            // Ratings fetch
+            // Rating fetch
             db.collection("reviews").where("productName", "==", productData.productName).get().then(snap => {
                 let total = 0;
                 snap.forEach(r => total += r.data().rating);
@@ -162,6 +159,45 @@ window.changeImg = function(el, src) {
     el.classList.add('active');
 }
 
+/* MASS UPDATE: BUY NOW FLOW */
+window.prepareBuy = function() {
+    if(productData.sizes && productData.sizes.length > 0 && !selectedSize) {
+        alert("Please select a size first! 👕");
+        return;
+    }
+
+    const buyItem = {
+        productId: productId,
+        productName: productData.productName,
+        price: productData.price,
+        imageUrl: productData.imageUrl,
+        size: selectedSize || "Free Size"
+    };
+
+    localStorage.setItem("directBuy", JSON.stringify(buyItem));
+    window.location.href = "checkout.html"; 
+}
+
+/* ADD TO CART FLOW */
+window.addToCart = function() {
+    const user = auth.currentUser;
+    if(!user) { alert("Please login first! 👤"); return; }
+    
+    if(productData.sizes && productData.sizes.length > 0 && !selectedSize) {
+        alert("Please select a size first! 👕");
+        return;
+    }
+
+    db.collection("cart").add({
+        user: user.email,
+        productName: productData.productName,
+        price: productData.price,
+        imageUrl: productData.imageUrl,
+        size: selectedSize || "Free Size",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => alert("Added to Cart! 🛒"));
+}
+
 function zoom(e) {
     const zoomer = e.currentTarget;
     const img = zoomer.querySelector('img');
@@ -171,17 +207,17 @@ function zoom(e) {
 }
 function resetZoom() { document.getElementById("mainImg").style.transformOrigin = `center`; }
 
-window.prepareBuy = function() {
-    if(productData.sizes && productData.sizes.length > 0 && !selectedSize) {
-        alert("Please select a size first! 👕");
-        return;
-    }
-    alert("Buying " + productData.productName + " (Size: " + selectedSize + ")");
-}
-
 function shareWa() {
     const text = `Check this out on Loyal Fashion! 🔥\n\n🛍 *${productData.productName}*\n💰 Price: ₹${productData.price}\n\nLink: ${window.location.href}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+function addFav() {
+    const user = auth.currentUser;
+    if(!user) { alert("Please Login First! 👤"); return; }
+    db.collection("wishlist").add({
+        user: user.email, productName: productData.productName, imageUrl: productData.imageUrl, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => alert("Added to Wishlist! ❤️"));
 }
 </script>
 </body>
