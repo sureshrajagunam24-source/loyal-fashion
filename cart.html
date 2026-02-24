@@ -1,52 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your Cart - Loyal Fashion</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart - Loyal Fashion</title>
+    <style>
+        :root { --primary: #ff3f6c; --dark: #282c3f; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; color: #333; }
+        
+        .header { background: #fff; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .header h2 { margin: 0; color: var(--dark); }
+        .back-btn { background: #fff; color: var(--primary); border: 2px solid var(--primary); padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .back-btn:hover { background: var(--primary); color: #fff; }
 
-<style>
-body{font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#f4f6f9; margin:0; color: #333;}
-.header{background:#000; color:#fff; padding:15px 30px; display:flex; justify-content:space-between; align-items: center;}
-.cart-container{padding:30px; max-width: 800px; margin: 0 auto;}
-.cart-item{
-    background:#fff;
-    padding:15px;
-    margin-bottom:15px;
-    border-radius:8px;
-    display:flex;
-    align-items:center;
-    gap:20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-.cart-item img{
-    width:80px;
-    height:80px;
-    object-fit:cover;
-    border-radius:6px;
-}
-.details{flex:1}
-.details b { font-size: 16px; display: block; margin-bottom: 5px; }
-button{padding:8px 15px; border:none; border-radius:5px; cursor:pointer; font-weight: bold;}
-.remove{background:#ff4d4d; color:white; transition: 0.3s;}
-.remove:hover{background: #d32f2f;}
-.checkout-section { padding: 20px 30px; background: #fff; border-top: 1px solid #ddd; position: sticky; bottom: 0; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
-.checkout{background:#28a745; color:white; padding:12px 25px; font-size: 16px;}
-.checkout:hover{background: #218838;}
-</style>
+        .cart-container { padding: 30px; max-width: 800px; margin: 20px auto; }
+        
+        .cart-item { background: #fff; padding: 20px; margin-bottom: 15px; border-radius: 12px; display: flex; align-items: center; gap: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); position: relative; }
+        .cart-item img { width: 90px; height: 110px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
+        
+        .details { flex: 1; }
+        .details b { font-size: 18px; display: block; margin-bottom: 5px; color: var(--dark); }
+        .details .size-badge { display: inline-block; background: #ffeef2; color: var(--primary); font-size: 12px; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-bottom: 5px; }
+        .details .price { color: #000; font-weight: bold; font-size: 18px; margin-top: 5px; }
+        
+        .remove { background: #ffebee; color: #c62828; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .remove:hover { background: #ffcdd2; }
+        
+        .checkout-section { padding: 25px 30px; background: #fff; border-top: 1px solid #ddd; position: sticky; bottom: 0; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); max-width: 800px; margin: 0 auto; border-radius: 12px 12px 0 0; }
+        .checkout-section h3 { margin: 0; font-size: 20px; color: var(--dark); }
+        .checkout { background: var(--dark); color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .checkout:hover { background: #000; }
+        
+        .empty-cart { text-align: center; padding: 60px 20px; background: #fff; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .empty-cart h3 { color: var(--dark); margin-bottom: 10px; }
+        .empty-cart p { color: #888; margin-bottom: 20px; }
+    </style>
 </head>
 <body>
 
 <div class="header">
-    <h2 style="margin:0;">🛒 Your Shopping Cart</h2>
-    <button onclick="window.location.href='index.html'" style="background:#fff; color:#000;">Back to Shop</button>
+    <h2>🛒 Your Cart</h2>
+    <button class="back-btn" onclick="window.location.href='index.html'">← Continue Shopping</button>
 </div>
 
 <div class="cart-container" id="cartList"></div>
 
-<div class="checkout-section">
-    <h3 style="margin:0;">Total Amount: <span style="color:#ff3f6c;">₹<span id="total">0</span></span></h3>
-    <button class="checkout" onclick="checkout()">Place All Orders</button>
+<div class="checkout-section" id="checkout-panel">
+    <h3>Total: <span style="color:var(--primary);">₹<span id="total">0</span></span></h3>
+    <button class="checkout" id="checkout-btn" onclick="checkout()">Place All Orders</button>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -70,6 +71,7 @@ const auth=firebase.auth();
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 const list = document.getElementById("cartList");
 const totalEl = document.getElementById("total");
+const checkoutPanel = document.getElementById("checkout-panel");
 
 /* RENDER CART & TOTAL CALCULATION */
 function renderCart(){
@@ -77,23 +79,31 @@ function renderCart(){
     let total=0;
 
     if(cart.length === 0) {
-        list.innerHTML = "<div style='text-align:center; padding:50px;'><h3>Your cart is empty! 🛍</h3></div>";
-        totalEl.innerText = 0;
+        list.innerHTML = `
+        <div class="empty-cart">
+            <h3>Your cart is empty! 🛍️</h3>
+            <p>Looks like you haven't added anything to your cart yet.</p>
+            <button class="checkout" onclick="window.location.href='index.html'">Shop Now</button>
+        </div>`;
+        checkoutPanel.style.display = "none";
         return;
     }
 
+    checkoutPanel.style.display = "flex";
+
     cart.forEach((item,index)=>{
-        // Total price calculation logic
         total += Number(item.price);
+        const itemSize = item.size || 'Free Size';
 
         list.innerHTML+=`
         <div class="cart-item">
-            <img src="${item.image}" alt="product">
+            <img src="${item.image || item.imageUrl}" alt="product">
             <div class="details">
-                <b>${item.name}</b>
-                <span style="color: #666; font-weight: bold;">₹${item.price}</span>
+                <b>${item.name || item.productName}</b>
+                <span class="size-badge">Size: ${itemSize}</span><br>
+                <div class="price">₹${item.price}</div>
             </div>
-            <button class="remove" onclick="removeItem(${index})">Remove</button>
+            <button class="remove" onclick="removeItem(${index})">🗑 Remove</button>
         </div>`;
     });
 
@@ -110,7 +120,7 @@ function removeItem(index){
 async function checkout(){
     const user = auth.currentUser;
     if(!user) {
-        alert("Please login to checkout! 👤");
+        alert("Please login to place your order! 👤");
         window.location.href = 'index.html';
         return;
     }
@@ -120,11 +130,14 @@ async function checkout(){
         return;
     }
 
-    // Buyer address fetch panra logic
+    const btn = document.getElementById("checkout-btn");
+    btn.innerText = "Processing... ⏳";
+    btn.disabled = true;
+
     try {
         const userDoc = await db.collection("users").doc(user.uid).get();
         if(!userDoc.exists || !userDoc.data().address) {
-            alert("⚠ Update your Delivery Address in Profile first!");
+            alert("⚠️ Please update your Delivery Address in your Profile first!");
             window.location.href = 'index.html';
             return;
         }
@@ -135,28 +148,34 @@ async function checkout(){
         for(let item of cart) {
             await db.collection("orders").add({
                 user: user.email,
-                buyerName: userData.name,
-                buyerMobile: userData.mobile,
-                buyerAddress: userData.address,
-                productName: item.name,
+                buyerName: userData.name || user.email.split('@')[0],
+                buyerMobile: userData.mobile || '',
+                buyerAddress: userData.address || '',
+                productName: item.name || item.productName,
                 price: item.price,
-                imageUrl: item.image,
+                imageUrl: item.image || item.imageUrl,
+                size: item.size || 'Free Size', // Size track panra logic sethachu
+                status: 'Pending',              // Default status Admin panel ku
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
         }
 
-        alert("Orders Placed Successfully! ✅ Payment Simulated.");
+        alert("Orders Placed Successfully! ✅");
         localStorage.removeItem("cart");
         cart=[];
-        renderCart();
         window.location.href = 'my-orders.html';
 
     } catch (err) {
         alert("Error during checkout: " + err.message);
+        btn.innerText = "Place All Orders";
+        btn.disabled = false;
     }
 }
 
-renderCart();
+// Auth state check panrom, then render panrom
+auth.onAuthStateChanged(user => {
+    renderCart();
+});
 </script>
 
 </body>
