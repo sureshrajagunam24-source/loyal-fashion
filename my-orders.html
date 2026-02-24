@@ -21,7 +21,7 @@
         .track-line { position: absolute; top: 10px; left: 0; height: 4px; background: #eee; width: 100%; z-index: 1; border-radius: 10px; }
         .track-progress { position: absolute; top: 10px; left: 0; height: 4px; background: var(--amazon-green); z-index: 2; transition: 0.8s ease; border-radius: 10px; }
         
-        .step { z-index: 3; text-align: center; width: 80px; }
+        .step { z-index: 3; text-align: center; width: 80px; background: #fff; }
         .dot { width: 22px; height: 22px; background: #ddd; border-radius: 50%; margin: 0 auto 8px; border: 3px solid #fff; transition: 0.3s; }
         .step.active .dot { background: var(--amazon-green); box-shadow: 0 0 10px rgba(46, 125, 50, 0.4); }
         .step-text { font-size: 11px; font-weight: bold; color: #999; text-transform: uppercase; }
@@ -29,7 +29,8 @@
 
         /* BUTTONS */
         .btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        .invoice-btn { background: #fff; color: var(--primary); border: 1px solid var(--primary); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .invoice-btn { background: #fff; color: var(--primary); border: 1px solid var(--primary); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.3s; }
+        .invoice-btn:hover { background: var(--primary); color: #fff; }
         .rate-btn { background: var(--primary); color: #fff; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; }
         .back-btn { background: #000; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     </style>
@@ -41,8 +42,7 @@
     <button class="back-btn" onclick="window.location.href='index.html'">← Back to Store</button>
 </div>
 
-<div id="ordersList">
-    </div>
+<div id="ordersList"></div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -81,6 +81,12 @@ auth.onAuthStateChanged(user => {
               if(orderStatus === "Shipped") progressWidth = "50%";
               if(orderStatus === "Delivered") progressWidth = "100%";
 
+              // Bill Button Visibility Logic
+              let billButtonHTML = "";
+              if(orderStatus === "Shipped" || orderStatus === "Delivered") {
+                  billButtonHTML = `<button class="invoice-btn" onclick='downloadInvoice(${JSON.stringify(data)})'>📄 Download Bill</button>`;
+              }
+
               list.innerHTML += `
               <div class="order-card">
                   <div class="product-section">
@@ -110,7 +116,7 @@ auth.onAuthStateChanged(user => {
                   </div>
 
                   <div class="btn-group">
-                      <button class="invoice-btn" onclick='downloadInvoice(${JSON.stringify(data)})'>📄 Download Bill</button>
+                      ${billButtonHTML}
                       ${orderStatus === "Delivered" ? 
                         `<button class="rate-btn" onclick="openRatingModal('${data.productName}')">⭐ Rate & Review</button>` : ''}
                   </div>
