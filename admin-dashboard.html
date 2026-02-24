@@ -16,7 +16,7 @@ body{margin:0;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;displa
 .main{flex:1;padding:40px;overflow:auto;}
 .card{background:#fff;padding:25px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.05);margin-bottom:25px;}
 
-input, select{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid #ddd; box-sizing: border-box;}
+input, select, textarea{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid #ddd; box-sizing: border-box; font-family: inherit;}
 button{padding:10px 15px;border:none;border-radius:6px;cursor:pointer; font-weight: bold;}
 .post-btn{width:100%;background:#007bff;color:#fff; padding: 12px; margin-top: 10px;}
 .edit-btn{background:#ffc107; margin-right: 5px;}
@@ -62,9 +62,12 @@ label { font-size: 12px; font-weight: bold; color: #555; margin-top: 5px; displa
 
     <div id="addProduct" class="tab">
         <div class="card">
-            <h2 id="form-title">Add New Product (Gallery & Options)</h2>
+            <h2 id="form-title">Add New Product (Options & Description)</h2>
             <input type="text" id="pName" placeholder="Product Name">
             <input type="number" id="pPrice" placeholder="Price (₹)">
+            
+            <label>Product Description:</label>
+            <textarea id="pDesc" placeholder="Describe material, fabric, and style..." style="height: 100px;"></textarea>
             
             <label>Select Category:</label>
             <select id="pCategory">
@@ -182,6 +185,7 @@ window.logout = function(){
 window.saveProduct = async function(){
     const name = document.getElementById("pName").value.trim();
     const price = document.getElementById("pPrice").value.trim();
+    const desc = document.getElementById("pDesc").value.trim();
     const category = document.getElementById("pCategory").value; 
     const status = document.getElementById("status-msg");
     const selectedSizes = Array.from(document.querySelectorAll('.size-check:checked')).map(cb => cb.value);
@@ -207,7 +211,7 @@ window.saveProduct = async function(){
     try {
         const imgData = await Promise.all(files.map(f => f ? toBase64(f) : ""));
         const productObj = {
-            productName: name, price: Number(price), category: category, sizes: selectedSizes,
+            productName: name, price: Number(price), description: desc, category: category, sizes: selectedSizes,
             imageUrl: imgData[0], imageUrl2: imgData[1], imageUrl3: imgData[2], 
             imageUrl4: imgData[3], imageUrl5: imgData[4], imageUrl6: imgData[5],
             createdAt: serverTimestamp()
@@ -236,7 +240,7 @@ function loadProducts(){
                 <td>${data.productName}</td>
                 <td>₹${data.price}</td>
                 <td>
-                    <button class="edit-btn" onclick="editProduct('${docSnap.id}','${data.productName}','${data.price}')">Edit</button>
+                    <button class="edit-btn" onclick="editProduct('${docSnap.id}','${data.productName}','${data.price}','${data.description || ""}')">Edit</button>
                     <button class="delete-btn" onclick="deleteProduct('${docSnap.id}')">Delete</button>
                 </td>
             </tr>`;
@@ -248,7 +252,6 @@ window.updateOrderStatus = async function(orderId, newStatus) {
     try { await updateDoc(doc(db, "orders", orderId), { status: newStatus }); } catch (err) { }
 }
 
-/* UPDATED ORDER LOAD LOGIC */
 function loadOrders(){
     const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
     onSnapshot(q, (snapshot) => {
@@ -263,7 +266,6 @@ function loadOrders(){
             if(data.status === 'Delivered') statusColor = "#28a745";
             if(data.status === 'Cancelled') statusColor = "#dc3545"; 
 
-            // Disable dropdown if order is Cancelled
             const isDisabled = data.status === 'Cancelled' ? 'disabled' : '';
 
             table.innerHTML += `
@@ -291,12 +293,18 @@ function loadOrders(){
     });
 }
 
-window.editProduct = function(id, name, price){ 
-    showTab('addProduct'); document.getElementById("pName").value = name; document.getElementById("pPrice").value = price; editId = id; 
+window.editProduct = function(id, name, price, description){ 
+    showTab('addProduct'); 
+    document.getElementById("pName").value = name; 
+    document.getElementById("pPrice").value = price; 
+    document.getElementById("pDesc").value = description; 
+    editId = id; 
 }
 window.deleteProduct = async function(id){ if(confirm("Delete product?")) await deleteDoc(doc(db, "products", id)); }
 window.clearForm = function(){ 
-    document.getElementById("pName").value=""; document.getElementById("pPrice").value=""; 
+    document.getElementById("pName").value=""; 
+    document.getElementById("pPrice").value=""; 
+    document.getElementById("pDesc").value=""; 
     document.querySelectorAll('.size-check').forEach(cb => cb.checked = false);
     for(let i=1; i<=6; i++){ document.getElementById("pImage" + i).value = ""; }
 }
