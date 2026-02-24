@@ -25,13 +25,17 @@
         
         .rating-badge { background: #e8f5e9; color: #2e7d32; padding: 5px 10px; border-radius: 4px; font-weight: bold; display: inline-block; margin-bottom: 20px; }
 
-        /* SIZE BUTTONS STYLE */
         .size-section { margin: 20px 0; }
         .size-title { font-weight: bold; margin-bottom: 10px; display: block; }
         .size-options { display: flex; gap: 10px; }
         .size-btn { padding: 10px 18px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-weight: bold; border-radius: 4px; transition: 0.3s; }
         .size-btn:hover { border-color: var(--primary); }
         .size-btn.active { background: var(--dark); color: #fff; border-color: var(--dark); }
+
+        /* DESCRIPTION STYLE */
+        .desc-container { margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px; }
+        .desc-title { font-weight: bold; font-size: 16px; margin-bottom: 10px; display: block; color: var(--dark); }
+        .desc-text { color: #666; line-height: 1.6; font-size: 14px; white-space: pre-wrap; }
 
         .btn-group { display: flex; gap: 15px; margin-top: 30px; }
         .btn-group button { flex: 1; padding: 15px; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 16px; }
@@ -65,11 +69,13 @@
         
         <div class="size-section" id="size-area">
             <span class="size-title">SELECT SIZE</span>
-            <div class="size-options" id="size-list">
-                </div>
+            <div class="size-options" id="size-list"></div>
         </div>
 
-        <p style="color: #666; line-height: 1.6;">Premium quality material. Made for comfort and style. Part of the Loyal Fashion exclusive collection.</p>
+        <div class="desc-container">
+            <span class="desc-title">Product Details</span>
+            <p id="p-desc" class="desc-text">Premium quality material. Made for comfort and style. Part of the Loyal Fashion exclusive collection.</p>
+        </div>
 
         <div class="action-tray">
             <button class="circle-btn" onclick="addFav()" title="Wishlist">❤️</button>
@@ -98,7 +104,7 @@ const auth = firebase.auth();
 const urlParams = new URLSearchParams(window.location.search);
 const productId = urlParams.get('id');
 let productData = {};
-let selectedSize = ""; // User select panna size inga save aagum
+let selectedSize = ""; 
 
 if(productId) {
     db.collection("products").doc(productId).get().then(doc => {
@@ -108,7 +114,12 @@ if(productId) {
             document.getElementById("p-price").innerText = "₹" + productData.price;
             document.getElementById("mainImg").src = productData.imageUrl;
             
-            // LOAD SIZES FROM FIRESTORE
+            // LOAD DESCRIPTION
+            if(productData.description) {
+                document.getElementById("p-desc").innerText = productData.description;
+            }
+            
+            // LOAD SIZES
             const sizeList = document.getElementById("size-list");
             if(productData.sizes && productData.sizes.length > 0) {
                 productData.sizes.forEach(size => {
@@ -118,7 +129,7 @@ if(productId) {
                 document.getElementById("size-area").style.display = "none";
             }
 
-            // Gallery logic...
+            // Gallery logic
             const images = [productData.imageUrl, productData.imageUrl2, productData.imageUrl3, productData.imageUrl4, productData.imageUrl5, productData.imageUrl6];
             let thumbHTML = '';
             images.forEach((img, idx) => {
@@ -128,7 +139,7 @@ if(productId) {
             });
             document.getElementById("thumbnail-list").innerHTML = thumbHTML;
 
-            // Ratings fetch...
+            // Ratings fetch
             db.collection("reviews").where("productName", "==", productData.productName).get().then(snap => {
                 let total = 0;
                 snap.forEach(r => total += r.data().rating);
@@ -139,7 +150,6 @@ if(productId) {
     });
 }
 
-// SIZE SELECTION FUNCTION
 window.selectSize = function(btn, size) {
     selectedSize = size;
     document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
@@ -161,13 +171,11 @@ function zoom(e) {
 }
 function resetZoom() { document.getElementById("mainImg").style.transformOrigin = `center`; }
 
-// CHECK SIZE BEFORE BUY
 window.prepareBuy = function() {
     if(productData.sizes && productData.sizes.length > 0 && !selectedSize) {
         alert("Please select a size first! 👕");
         return;
     }
-    // Proceed to buy logic here
     alert("Buying " + productData.productName + " (Size: " + selectedSize + ")");
 }
 
