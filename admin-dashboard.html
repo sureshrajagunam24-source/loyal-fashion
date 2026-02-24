@@ -32,6 +32,10 @@ th,td{padding:15px;border-bottom:1px solid #eee;text-align:left;}
 .buyer-name { font-weight: bold; color: #ff3f6c; font-size: 15px; display: block; margin-bottom: 3px; }
 .status-select { padding: 8px; border-radius: 4px; font-weight: bold; border: 1px solid #ddd; cursor: pointer; }
 label { font-size: 12px; font-weight: bold; color: #555; margin-top: 5px; display: block; }
+
+/* SIZE CHECKBOX STYLE */
+.size-selector { display: flex; gap: 15px; margin: 10px 0; background: #f9f9f9; padding: 10px; border-radius: 8px; }
+.size-selector label { display: inline; margin-right: 5px; cursor: pointer; }
 </style>
 </head>
 
@@ -59,9 +63,26 @@ label { font-size: 12px; font-weight: bold; color: #555; margin-top: 5px; displa
 
     <div id="addProduct" class="tab">
         <div class="card">
-            <h2 id="form-title">Add New Product (6 Gallery Images)</h2>
+            <h2 id="form-title">Add New Product (Gallery & Options)</h2>
             <input type="text" id="pName" placeholder="Product Name">
             <input type="number" id="pPrice" placeholder="Price (₹)">
+            
+            <label>Select Category:</label>
+            <select id="pCategory">
+                <option value="MEN">MEN</option>
+                <option value="WOMEN">WOMEN</option>
+                <option value="KIDS">KIDS</option>
+                <option value="ALL">ALL/OTHERS</option>
+            </select>
+
+            <label>Available Sizes:</label>
+            <div class="size-selector">
+                <label><input type="checkbox" class="size-check" value="S"> S</label>
+                <label><input type="checkbox" class="size-check" value="M"> M</label>
+                <label><input type="checkbox" class="size-check" value="L"> L</label>
+                <label><input type="checkbox" class="size-check" value="XL"> XL</label>
+                <label><input type="checkbox" class="size-check" value="XXL"> XXL</label>
+            </div>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <div>
@@ -82,7 +103,7 @@ label { font-size: 12px; font-weight: bold; color: #555; margin-top: 5px; displa
                 </div>
             </div>
             
-            <button class="post-btn" id="save-btn" onclick="saveProduct()">Save Product with 6 Images</button>
+            <button class="post-btn" id="save-btn" onclick="saveProduct()">Save Product with Options</button>
             <p id="status-msg" style="text-align:center; font-weight:bold; margin-top:10px;"></p>
         </div>
     </div>
@@ -162,9 +183,12 @@ window.logout = function(){
 window.saveProduct = async function(){
     const name = document.getElementById("pName").value.trim();
     const price = document.getElementById("pPrice").value.trim();
+    const category = document.getElementById("pCategory").value; // Category
     const status = document.getElementById("status-msg");
 
-    // Array to hold files
+    // Fetching Selected Sizes
+    const selectedSizes = Array.from(document.querySelectorAll('.size-check:checked')).map(cb => cb.value);
+
     const files = [];
     for(let i=1; i<=6; i++) {
         const fileInput = document.getElementById("pImage" + i);
@@ -172,10 +196,10 @@ window.saveProduct = async function(){
     }
 
     if(!name || !price || !files[0]){ 
-        status.innerText="Product Name, Price and Main Image are mandatory! ❌"; 
+        status.innerText="Name, Price and Main Image are mandatory! ❌"; 
         return; 
     }
-    status.innerText = "Processing 6 Images... ⏳";
+    status.innerText = "Processing Data... ⏳";
 
     const toBase64 = file => new Promise((resolve) => {
         const reader = new FileReader();
@@ -189,6 +213,8 @@ window.saveProduct = async function(){
         const productObj = {
             productName: name,
             price: Number(price),
+            category: category, // Added to Firestore
+            sizes: selectedSizes, // Added to Firestore
             imageUrl: imgData[0],
             imageUrl2: imgData[1],
             imageUrl3: imgData[2],
@@ -201,14 +227,13 @@ window.saveProduct = async function(){
         if(editId){
             await updateDoc(doc(db, "products", editId), productObj);
             editId = null;
-            status.innerText="Product Updated Successfully! ✅";
+            status.innerText="Updated Successfully! ✅";
         } else {
             await addDoc(collection(db, "products"), productObj);
-            status.innerText="Product Added Successfully! ✅";
+            status.innerText="Added Successfully! ✅";
         }
         clearForm();
     } catch (err) {
-        console.error(err);
         status.innerText="Error: Might be file size too large! ❌";
     }
 }
@@ -234,9 +259,7 @@ function loadProducts(){
 }
 
 window.updateOrderStatus = async function(orderId, newStatus) {
-    try {
-        await updateDoc(doc(db, "orders", orderId), { status: newStatus });
-    } catch (err) { alert("Error updating status!"); }
+    try { await updateDoc(doc(db, "orders", orderId), { status: newStatus }); } catch (err) { }
 }
 
 function loadOrders(){
@@ -249,8 +272,7 @@ function loadOrders(){
             const orderId = docSnap.id;
             const statusColor = data.status === 'Delivered' ? '#28a745' : (data.status === 'Shipped' ? '#007bff' : '#ef6c00');
             
-            table.innerHTML += `
-            <tr>
+            table.innerHTML += `<tr>
                 <td><img src="${data.imageUrl || 'image.png'}" class="order-img"></td>
                 <td><b>${data.productName}</b></td>
                 <td>₹${data.price}</td>
@@ -278,15 +300,12 @@ window.editProduct = function(id, name, price){
     document.getElementById("pPrice").value = price; 
     editId = id; 
 }
-window.deleteProduct = async function(id){ 
-    if(confirm("Delete product?")) await deleteDoc(doc(db, "products", id)); 
-}
+window.deleteProduct = async function(id){ if(confirm("Delete product?")) await deleteDoc(doc(db, "products", id)); }
 window.clearForm = function(){ 
     document.getElementById("pName").value=""; 
     document.getElementById("pPrice").value=""; 
-    for(let i=1; i<=6; i++){
-        document.getElementById("pImage" + i).value = "";
-    }
+    document.querySelectorAll('.size-check').forEach(cb => cb.checked = false);
+    for(let i=1; i<=6; i++){ document.getElementById("pImage" + i).value = ""; }
 }
 </script>
 </body>
