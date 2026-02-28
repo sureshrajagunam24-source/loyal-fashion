@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "app.vercel.utra_fashoin.twa",
-        "sha256_cert_fingerprints": ["0F:39:E0:66:7B:AE:A3:02:44:0D:61:75:6E:BE:63:81:C8:27:BF:21:B4:48:97:BF:B7:10:3B:64:85:1B:9C:E2"]
+        "sha256_cert_fingerprints": ["E9:5B:ED:46:B5:DA:A7:8A:10:A0:CF:D0:D0:67:80:22:91:96:9C:DF:4A:0C:13:76:58:29:67:F1:D6:11:F4:4F"]
       }
     }]
