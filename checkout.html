@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - Loyal Fashion</title>
+    <title>Checkout - UTRA FASHION</title>
     <style>
         :root { --primary: #ff3f6c; --dark: #282c3f; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
@@ -16,19 +16,24 @@
         .item-details p { margin: 5px 0; color: #666; font-size: 15px; }
         .price-tag { color: #000; font-weight: bold; font-size: 18px; }
 
-        /* Form Style with Edit UI */
+        /* PAYMENT SECTION */
+        .payment-box { display: none; margin-top: 25px; background: #fff9fa; border: 2px dashed var(--primary); padding: 20px; border-radius: 12px; text-align: center; }
+        .qr-img { width: 180px; margin: 15px 0; border: 5px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .upi-id { background: #eee; padding: 8px; border-radius: 5px; font-weight: bold; font-size: 14px; margin-bottom: 15px; display: inline-block; }
+        
+        .upload-area { margin-top: 15px; text-align: left; }
+        .upload-area label { color: var(--primary); margin-bottom: 8px; font-weight: bold; }
+
+        /* Form Style */
         .form-group { margin-bottom: 18px; position: relative; }
         label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 13px; color: #555; }
-        
         .input-wrapper { display: flex; gap: 10px; align-items: center; }
-        input, textarea { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; background: #f9f9f9; transition: 0.3s; }
+        input, textarea { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; background: #f9f9f9; transition: 0.3s; width: 100%; box-sizing: border-box; }
         input[readonly], textarea[readonly] { background: #f1f1f1; cursor: not-allowed; border-color: transparent; }
         
-        .edit-btn { background: #eee; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.3s; font-weight: bold; }
-        .edit-btn:hover { background: #ddd; }
-        
-        .place-order-btn { width: 100%; background: var(--dark); color: #fff; padding: 15px; border: none; border-radius: 8px; font-size: 17px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
-        .place-order-btn:hover { background: #000; transform: translateY(-2px); }
+        .edit-btn { background: #eee; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .place-order-btn { width: 100%; background: var(--dark); color: #fff; padding: 15px; border: none; border-radius: 8px; font-size: 17px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .confirm-pay-btn { width: 100%; background: var(--primary); color: #fff; padding: 15px; border: none; border-radius: 8px; font-size: 17px; font-weight: bold; cursor: pointer; margin-top: 10px; display: none; }
         .back-link { display: inline-block; margin-bottom: 20px; text-decoration: none; color: var(--primary); font-weight: bold; }
     </style>
 </head>
@@ -36,37 +41,55 @@
 
 <div class="checkout-container">
     <a href="index.html" class="back-link">← Continue Shopping</a>
-    <h2>📦 Checkout</h2>
+    <h2>📦 Checkout - UTRA FASHION</h2>
 
     <div id="order-preview" class="order-summary">
         <p>Loading product details...</p>
     </div>
 
-    <div class="form-group">
-        <label>Full Name</label>
-        <div class="input-wrapper">
-            <input type="text" id="bName" placeholder="Name not found" readonly>
-            <button class="edit-btn" onclick="toggleEdit('bName')">✏️ Edit</button>
+    <div id="address-section">
+        <div class="form-group">
+            <label>Full Name</label>
+            <div class="input-wrapper">
+                <input type="text" id="bName" readonly>
+                <button class="edit-btn" onclick="toggleEdit('bName')">✏️ Edit</button>
+            </div>
         </div>
+
+        <div class="form-group">
+            <label>Mobile Number</label>
+            <div class="input-wrapper">
+                <input type="number" id="bMobile" readonly>
+                <button class="edit-btn" onclick="toggleEdit('bMobile')">✏️ Edit</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Delivery Address</label>
+            <div class="input-wrapper">
+                <textarea id="bAddress" readonly></textarea>
+                <button class="edit-btn" onclick="toggleEdit('bAddress')">✏️ Edit</button>
+            </div>
+        </div>
+        <button class="place-order-btn" onclick="showPayment()">PROCEED TO PAYMENT</button>
     </div>
 
-    <div class="form-group">
-        <label>Mobile Number</label>
-        <div class="input-wrapper">
-            <input type="number" id="bMobile" placeholder="Mobile not found" readonly>
-            <button class="edit-btn" onclick="toggleEdit('bMobile')">✏️ Edit</button>
+    <div id="payment-section" class="payment-box">
+        <h3>UPI Payment</h3>
+        <p style="font-size: 13px; color: #666;">Scan QR or pay to UPI ID and upload screenshot</p>
+        
+        <img src="qr.png" class="qr-img" alt="UPI QR Code">
+        <br>
+        <div class="upi-id">UPI: sureshrajagunam@okaxis</div>
+        
+        <div class="upload-area">
+            <label>Upload Payment Screenshot:</label>
+            <input type="file" id="payScreenshot" accept="image/*">
         </div>
+
+        <button class="confirm-pay-btn" id="final-btn" style="display: block;" onclick="confirmOrder()">CONFIRM & PLACE ORDER</button>
     </div>
 
-    <div class="form-group">
-        <label>Delivery Address</label>
-        <div class="input-wrapper">
-            <textarea id="bAddress" placeholder="Address not found" readonly></textarea>
-            <button class="edit-btn" onclick="toggleEdit('bAddress')">✏️ Edit</button>
-        </div>
-    </div>
-
-    <button class="place-order-btn" onclick="confirmOrder()">PLACE ORDER (CASH ON DELIVERY)</button>
     <p id="msg" style="text-align: center; font-weight: bold; color: green; margin-top: 10px;"></p>
 </div>
 
@@ -87,7 +110,6 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // 1. Details page-la irundhu vandha data-ah fetch pannuvom
     const buyData = JSON.parse(localStorage.getItem("directBuy"));
 
     if(buyData) {
@@ -95,90 +117,76 @@
             <img src="${buyData.imageUrl}">
             <div class="item-details">
                 <h3>${buyData.productName}</h3>
-                <p>Selected Size: <b style="color:var(--primary)">${buyData.size}</b></p>
+                <p>Size: <b style="color:var(--primary)">${buyData.size}</b></p>
                 <div class="price-tag">₹${buyData.price}</div>
             </div>
         `;
-    } else {
-        window.location.href = "index.html";
-    }
+    } else { window.location.href = "index.html"; }
 
-    // 2. AUTO-FILL PROFILE DATA WITH MULTI-FIELD CHECK
     auth.onAuthStateChanged(user => {
         if (user) {
             db.collection("users").doc(user.uid).get().then(doc => {
                 if (doc.exists) {
                     const profile = doc.data();
-                    // Name load aagala-na alternates check pannuvom
-                    document.getElementById("bName").value = profile.fullName || profile.name || profile.displayName || "";
-                    document.getElementById("bMobile").value = profile.mobile || profile.phone || "";
+                    document.getElementById("bName").value = profile.fullName || profile.name || "";
+                    document.getElementById("bMobile").value = profile.mobile || "";
                     document.getElementById("bAddress").value = profile.address || "";
-                } else {
-                    document.querySelectorAll('input, textarea').forEach(el => el.removeAttribute('readonly'));
                 }
             });
         }
     });
 
-    // 3. TOGGLE EDIT FUNCTION
     window.toggleEdit = function(id) {
         const input = document.getElementById(id);
         if (input.hasAttribute('readonly')) {
             input.removeAttribute('readonly');
             input.style.background = "#fff";
-            input.style.borderColor = "var(--primary)";
-            input.focus();
-        } else {
-            input.setAttribute('readonly', true);
-            input.style.background = "#f1f1f1";
-            input.style.borderColor = "#ddd";
-        }
+        } else { input.setAttribute('readonly', true); input.style.background = "#f1f1f1"; }
     }
 
-    // 4. CONFIRM ORDER LOGIC
-    window.confirmOrder = async function() {
+    // Switch to Payment Section
+    window.showPayment = function() {
         const name = document.getElementById("bName").value.trim();
         const mobile = document.getElementById("bMobile").value.trim();
         const address = document.getElementById("bAddress").value.trim();
+        if(!name || !mobile || !address) { alert("Fill address details first!"); return; }
+        
+        document.getElementById("address-section").style.display = "none";
+        document.getElementById("payment-section").style.display = "block";
+    }
+
+    window.confirmOrder = async function() {
+        const screenshot = document.getElementById("payScreenshot").files[0];
         const user = auth.currentUser;
 
-        if(!name || !mobile || !address) {
-            alert("Please fill all delivery details! 📝");
-            return;
-        }
+        if(!screenshot) { alert("Please upload payment screenshot! 📸"); return; }
+        
+        document.getElementById("msg").innerText = "Processing Order... ⏳";
+        
+        // Convert screenshot to Base64 to save in Firestore
+        const reader = new FileReader();
+        reader.readAsDataURL(screenshot);
+        reader.onload = async () => {
+            try {
+                await db.collection("orders").add({
+                    productName: buyData.productName,
+                    price: buyData.price,
+                    imageUrl: buyData.imageUrl,
+                    size: buyData.size,
+                    buyerName: document.getElementById("bName").value,
+                    buyerMobile: document.getElementById("bMobile").value,
+                    buyerAddress: document.getElementById("bAddress").value,
+                    user: user.email,
+                    paymentScreenshot: reader.result, // Saves screenshot
+                    status: "Pending",
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
 
-        if(!user) {
-            alert("Please login to place order! 👤");
-            return;
-        }
-
-        document.getElementById("msg").innerText = "Placing Order... ⏳";
-
-        try {
-            await db.collection("orders").add({
-                productName: buyData.productName,
-                price: buyData.price,
-                imageUrl: buyData.imageUrl,
-                size: buyData.size,
-                buyerName: name,
-                buyerMobile: mobile,
-                buyerAddress: address,
-                user: user.email,
-                status: "Pending",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            document.getElementById("msg").innerText = "Order Placed Successfully! 🎉";
-            localStorage.removeItem("directBuy"); 
-            
-            setTimeout(() => {
-                window.location.href = "my-orders.html";
-            }, 2000);
-
-        } catch (err) {
-            alert("Order Error: " + err.message);
-            document.getElementById("msg").innerText = "";
-        }
+                document.getElementById("msg").innerText = "Order Success! 🎉";
+                localStorage.removeItem("directBuy");
+                setTimeout(() => { window.location.href = "my-orders.html"; }, 2000);
+            } catch (err) { alert("Error!"); }
+        };
     }
 </script>
 </body>
