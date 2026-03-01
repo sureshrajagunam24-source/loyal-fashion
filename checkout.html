@@ -62,6 +62,11 @@
             <div class="input-wrapper"><textarea id="bAddress" readonly></textarea><button class="edit-btn" onclick="toggleEdit('bAddress')">✏️ Edit</button></div>
         </div>
 
+        <div class="form-group">
+            <label>Pincode (6-Digits Required)</label>
+            <div class="input-wrapper"><input type="number" id="bPincode" placeholder="Enter 6-digit Pincode"></div>
+        </div>
+
         <div class="method-selector">
             <label>Select Payment Method:</label>
             <select id="payMethod" onchange="togglePaymentUI()" style="width:100%; padding:10px; border-radius:8px;">
@@ -91,13 +96,13 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
 <script>
-    const firebaseConfig = { 
-        apiKey:"AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4", 
-        authDomain:"e-commerce-wepsite.firebaseapp.com", 
-        projectId:"e-commerce-wepsite", 
-        storageBucket:"e-commerce-wepsite.appspot.com", 
-        messagingSenderId:"394408704286", 
-        appId:"1:394408704286:web:9ad690a946b225ab20f10f" 
+    const firebaseConfig = { 
+        apiKey:"AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4", 
+        authDomain:"e-commerce-wepsite.firebaseapp.com", 
+        projectId:"e-commerce-wepsite", 
+        storageBucket:"e-commerce-wepsite.appspot.com", 
+        messagingSenderId:"394408704286", 
+        appId:"1:394408704286:web:9ad690a946b225ab20f10f" 
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
@@ -129,16 +134,30 @@
         else { input.setAttribute('readonly', true); input.style.background = "#f1f1f1"; }
     }
 
-    // Toggle Payment UI
     window.togglePaymentUI = function() {
         const method = document.getElementById("payMethod").value;
         document.getElementById("payment-section").style.display = (method === "Online") ? "block" : "none";
     }
 
     window.confirmOrder = async function() {
+        const name = document.getElementById("bName").value.trim();
+        const mobile = document.getElementById("bMobile").value.trim();
+        const address = document.getElementById("bAddress").value.trim();
+        const pincode = document.getElementById("bPincode").value.trim(); //
         const method = document.getElementById("payMethod").value;
         const screenshot = document.getElementById("payScreenshot").files[0];
         const user = auth.currentUser;
+
+        // STRICT VALIDATION
+        if(!name || !mobile || !address || !pincode) {
+            alert("Nanpaa, address matrum pincode details-ah fill pannunga! 📝");
+            return;
+        }
+
+        if(pincode.length !== 6) {
+            alert("Pincode sariyaana 6-digit number-aa irukkanum! 🔢");
+            return;
+        }
 
         if(!user) { alert("Please login!"); return; }
         if(method === "Online" && !screenshot) { alert("Upload payment screenshot!"); return; }
@@ -150,11 +169,11 @@
             price: buyData.price,
             imageUrl: buyData.imageUrl,
             size: buyData.size,
-            buyerName: document.getElementById("bName").value,
-            buyerMobile: document.getElementById("bMobile").value,
-            buyerAddress: document.getElementById("bAddress").value,
+            buyerName: name,
+            buyerMobile: mobile,
+            buyerAddress: address + " - Pincode: " + pincode, // Saves pincode with address
             user: user.email,
-            paymentMethod: method, // Saves COD or Online
+            paymentMethod: method,
             status: "Pending",
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
@@ -167,7 +186,7 @@
                 await saveOrder(orderData);
             };
         } else {
-            await saveOrder(orderData); // COD has no screenshot
+            await saveOrder(orderData);
         }
     }
 
