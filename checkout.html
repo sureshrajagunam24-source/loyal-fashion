@@ -16,6 +16,11 @@
         .item-details p { margin: 5px 0; color: #666; font-size: 15px; }
         .price-tag { color: #000; font-weight: bold; font-size: 18px; }
 
+        /* DELIVERY INFO STYLE */
+        .delivery-box { margin-top: 10px; padding: 12px; background: #e8f5e9; border-radius: 8px; border: 1px solid #c8e6c9; display: flex; align-items: center; gap: 12px; }
+        .delivery-box b { color: #2e7d32; font-size: 13px; text-transform: uppercase; }
+        .delivery-box span { font-weight: bold; color: #333; font-size: 15px; display: block; }
+
         /* PAYMENT SECTION */
         .method-selector { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 10px; border: 1px solid #eee; }
         .payment-box { display: none; margin-top: 15px; background: #fff9fa; border: 2px dashed var(--primary); padding: 20px; border-radius: 12px; text-align: center; }
@@ -46,6 +51,15 @@
     <div id="order-preview" class="order-summary">
         <p>Loading product details...</p>
     </div>
+
+    <div class="delivery-box">
+        <span style="font-size: 24px;">🚚</span>
+        <div>
+            <b>Estimated Delivery:</b>
+            <span id="est-date">Calculating date...</span>
+        </div>
+    </div>
+    <br>
 
     <div id="address-section">
         <div class="form-group">
@@ -95,13 +109,13 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
 <script>
-    const firebaseConfig = { 
-        apiKey:"AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4", 
-        authDomain:"e-commerce-wepsite.firebaseapp.com", 
-        projectId:"e-commerce-wepsite", 
-        storageBucket:"e-commerce-wepsite.appspot.com", 
-        messagingSenderId:"394408704286", 
-        appId:"1:394408704286:web:9ad690a946b225ab20f10f" 
+    const firebaseConfig = { 
+        apiKey:"AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4", 
+        authDomain:"e-commerce-wepsite.firebaseapp.com", 
+        projectId:"e-commerce-wepsite", 
+        storageBucket:"e-commerce-wepsite.appspot.com", 
+        messagingSenderId:"394408704286", 
+        appId:"1:394408704286:web:9ad690a946b225ab20f10f" 
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
@@ -113,6 +127,16 @@
         document.getElementById("order-preview").innerHTML = `
             <img src="${buyData.imageUrl}"><div class="item-details"><h3>${buyData.productName}</h3><p>Size: <b style="color:var(--primary)">${buyData.size}</b></p><div class="price-tag">₹${buyData.price}</div></div>`;
     } else { window.location.href = "index.html"; }
+
+    // DYNAMIC DELIVERY DATE LOGIC
+    function calculateDelivery() {
+        const today = new Date();
+        const deliveryDate = new Date();
+        deliveryDate.setDate(today.getDate() + 5); 
+        const options = { day: 'numeric', month: 'long', year: 'numeric' };
+        document.getElementById("est-date").innerText = deliveryDate.toLocaleDateString('en-IN', options);
+    }
+    calculateDelivery();
 
     auth.onAuthStateChanged(user => {
         if (user) {
@@ -147,7 +171,6 @@
         const screenshot = document.getElementById("payScreenshot").files[0];
         const user = auth.currentUser;
 
-        // ENGLISH ALERTS & STRICT CHECK
         if(!name || !mobile || !address || !pincode) {
             alert("Please fill in all delivery details and pincode!");
             return;
@@ -171,6 +194,7 @@
             buyerName: name,
             buyerMobile: mobile,
             buyerAddress: address + " - Pincode: " + pincode,
+            deliveryEstimate: document.getElementById("est-date").innerText, // Saves estimate in DB
             user: user.email,
             paymentMethod: method,
             status: "Pending",
