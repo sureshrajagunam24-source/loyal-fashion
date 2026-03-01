@@ -17,7 +17,8 @@
         .price-tag { color: #000; font-weight: bold; font-size: 18px; }
 
         /* PAYMENT SECTION */
-        .payment-box { display: none; margin-top: 25px; background: #fff9fa; border: 2px dashed var(--primary); padding: 20px; border-radius: 12px; text-align: center; }
+        .method-selector { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 10px; border: 1px solid #eee; }
+        .payment-box { display: none; margin-top: 15px; background: #fff9fa; border: 2px dashed var(--primary); padding: 20px; border-radius: 12px; text-align: center; }
         .qr-img { width: 180px; margin: 15px 0; border: 5px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .upi-id { background: #eee; padding: 8px; border-radius: 5px; font-weight: bold; font-size: 14px; margin-bottom: 15px; display: inline-block; }
         
@@ -33,7 +34,7 @@
         
         .edit-btn { background: #eee; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
         .place-order-btn { width: 100%; background: var(--dark); color: #fff; padding: 15px; border: none; border-radius: 8px; font-size: 17px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .confirm-pay-btn { width: 100%; background: var(--primary); color: #fff; padding: 15px; border: none; border-radius: 8px; font-size: 17px; font-weight: bold; cursor: pointer; margin-top: 10px; display: none; }
+        .confirm-pay-btn { width: 100%; background: var(--primary); color: #fff; padding: 15px; border: none; border-radius: 8px; font-size: 17px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .back-link { display: inline-block; margin-bottom: 20px; text-decoration: none; color: var(--primary); font-weight: bold; }
     </style>
 </head>
@@ -50,44 +51,36 @@
     <div id="address-section">
         <div class="form-group">
             <label>Full Name</label>
-            <div class="input-wrapper">
-                <input type="text" id="bName" readonly>
-                <button class="edit-btn" onclick="toggleEdit('bName')">✏️ Edit</button>
-            </div>
+            <div class="input-wrapper"><input type="text" id="bName" readonly><button class="edit-btn" onclick="toggleEdit('bName')">✏️ Edit</button></div>
         </div>
-
         <div class="form-group">
             <label>Mobile Number</label>
-            <div class="input-wrapper">
-                <input type="number" id="bMobile" readonly>
-                <button class="edit-btn" onclick="toggleEdit('bMobile')">✏️ Edit</button>
-            </div>
+            <div class="input-wrapper"><input type="number" id="bMobile" readonly><button class="edit-btn" onclick="toggleEdit('bMobile')">✏️ Edit</button></div>
         </div>
-
         <div class="form-group">
             <label>Delivery Address</label>
-            <div class="input-wrapper">
-                <textarea id="bAddress" readonly></textarea>
-                <button class="edit-btn" onclick="toggleEdit('bAddress')">✏️ Edit</button>
+            <div class="input-wrapper"><textarea id="bAddress" readonly></textarea><button class="edit-btn" onclick="toggleEdit('bAddress')">✏️ Edit</button></div>
+        </div>
+
+        <div class="method-selector">
+            <label>Select Payment Method:</label>
+            <select id="payMethod" onchange="togglePaymentUI()" style="width:100%; padding:10px; border-radius:8px;">
+                <option value="COD">Cash on Delivery (COD)</option>
+                <option value="Online">Online Payment (UPI Scan)</option>
+            </select>
+        </div>
+
+        <div id="payment-section" class="payment-box">
+            <h3>UPI Payment</h3>
+            <img src="qr.png" class="qr-img" alt="UPI QR Code">
+            <br><div class="upi-id">UPI: sureshrajagunam@okaxis</div>
+            <div class="upload-area">
+                <label>Upload Payment Screenshot:</label>
+                <input type="file" id="payScreenshot" accept="image/*">
             </div>
         </div>
-        <button class="place-order-btn" onclick="showPayment()">PROCEED TO PAYMENT</button>
-    </div>
 
-    <div id="payment-section" class="payment-box">
-        <h3>UPI Payment</h3>
-        <p style="font-size: 13px; color: #666;">Scan QR or pay to UPI ID and upload screenshot</p>
-        
-        <img src="qr.png" class="qr-img" alt="UPI QR Code">
-        <br>
-        <div class="upi-id">UPI: sureshrajagunam@okaxis</div>
-        
-        <div class="upload-area">
-            <label>Upload Payment Screenshot:</label>
-            <input type="file" id="payScreenshot" accept="image/*">
-        </div>
-
-        <button class="confirm-pay-btn" id="final-btn" style="display: block;" onclick="confirmOrder()">CONFIRM & PLACE ORDER</button>
+        <button class="place-order-btn" id="final-btn" onclick="confirmOrder()">PLACE ORDER</button>
     </div>
 
     <p id="msg" style="text-align: center; font-weight: bold; color: green; margin-top: 10px;"></p>
@@ -98,13 +91,13 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
 <script>
-    const firebaseConfig = { 
-        apiKey:"AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4", 
-        authDomain:"e-commerce-wepsite.firebaseapp.com", 
-        projectId:"e-commerce-wepsite", 
-        storageBucket:"e-commerce-wepsite.appspot.com", 
-        messagingSenderId:"394408704286", 
-        appId:"1:394408704286:web:9ad690a946b225ab20f10f" 
+    const firebaseConfig = { 
+        apiKey:"AIzaSyCax6078YpxQU0kHIChQLuEmpLUYXSxQr4", 
+        authDomain:"e-commerce-wepsite.firebaseapp.com", 
+        projectId:"e-commerce-wepsite", 
+        storageBucket:"e-commerce-wepsite.appspot.com", 
+        messagingSenderId:"394408704286", 
+        appId:"1:394408704286:web:9ad690a946b225ab20f10f" 
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
@@ -114,13 +107,7 @@
 
     if(buyData) {
         document.getElementById("order-preview").innerHTML = `
-            <img src="${buyData.imageUrl}">
-            <div class="item-details">
-                <h3>${buyData.productName}</h3>
-                <p>Size: <b style="color:var(--primary)">${buyData.size}</b></p>
-                <div class="price-tag">₹${buyData.price}</div>
-            </div>
-        `;
+            <img src="${buyData.imageUrl}"><div class="item-details"><h3>${buyData.productName}</h3><p>Size: <b style="color:var(--primary)">${buyData.size}</b></p><div class="price-tag">₹${buyData.price}</div></div>`;
     } else { window.location.href = "index.html"; }
 
     auth.onAuthStateChanged(user => {
@@ -138,55 +125,59 @@
 
     window.toggleEdit = function(id) {
         const input = document.getElementById(id);
-        if (input.hasAttribute('readonly')) {
-            input.removeAttribute('readonly');
-            input.style.background = "#fff";
-        } else { input.setAttribute('readonly', true); input.style.background = "#f1f1f1"; }
+        if (input.hasAttribute('readonly')) { input.removeAttribute('readonly'); input.style.background = "#fff"; } 
+        else { input.setAttribute('readonly', true); input.style.background = "#f1f1f1"; }
     }
 
-    // Switch to Payment Section
-    window.showPayment = function() {
-        const name = document.getElementById("bName").value.trim();
-        const mobile = document.getElementById("bMobile").value.trim();
-        const address = document.getElementById("bAddress").value.trim();
-        if(!name || !mobile || !address) { alert("Fill address details first!"); return; }
-        
-        document.getElementById("address-section").style.display = "none";
-        document.getElementById("payment-section").style.display = "block";
+    // Toggle Payment UI
+    window.togglePaymentUI = function() {
+        const method = document.getElementById("payMethod").value;
+        document.getElementById("payment-section").style.display = (method === "Online") ? "block" : "none";
     }
 
     window.confirmOrder = async function() {
+        const method = document.getElementById("payMethod").value;
         const screenshot = document.getElementById("payScreenshot").files[0];
         const user = auth.currentUser;
 
-        if(!screenshot) { alert("Please upload payment screenshot! 📸"); return; }
+        if(!user) { alert("Please login!"); return; }
+        if(method === "Online" && !screenshot) { alert("Upload payment screenshot!"); return; }
         
-        document.getElementById("msg").innerText = "Processing Order... ⏳";
-        
-        // Convert screenshot to Base64 to save in Firestore
-        const reader = new FileReader();
-        reader.readAsDataURL(screenshot);
-        reader.onload = async () => {
-            try {
-                await db.collection("orders").add({
-                    productName: buyData.productName,
-                    price: buyData.price,
-                    imageUrl: buyData.imageUrl,
-                    size: buyData.size,
-                    buyerName: document.getElementById("bName").value,
-                    buyerMobile: document.getElementById("bMobile").value,
-                    buyerAddress: document.getElementById("bAddress").value,
-                    user: user.email,
-                    paymentScreenshot: reader.result, // Saves screenshot
-                    status: "Pending",
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+        document.getElementById("msg").innerText = "Processing... ⏳";
 
-                document.getElementById("msg").innerText = "Order Success! 🎉";
-                localStorage.removeItem("directBuy");
-                setTimeout(() => { window.location.href = "my-orders.html"; }, 2000);
-            } catch (err) { alert("Error!"); }
+        const orderData = {
+            productName: buyData.productName,
+            price: buyData.price,
+            imageUrl: buyData.imageUrl,
+            size: buyData.size,
+            buyerName: document.getElementById("bName").value,
+            buyerMobile: document.getElementById("bMobile").value,
+            buyerAddress: document.getElementById("bAddress").value,
+            user: user.email,
+            paymentMethod: method, // Saves COD or Online
+            status: "Pending",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
+
+        if(method === "Online") {
+            const reader = new FileReader();
+            reader.readAsDataURL(screenshot);
+            reader.onload = async () => {
+                orderData.paymentScreenshot = reader.result;
+                await saveOrder(orderData);
+            };
+        } else {
+            await saveOrder(orderData); // COD has no screenshot
+        }
+    }
+
+    async function saveOrder(data) {
+        try {
+            await db.collection("orders").add(data);
+            document.getElementById("msg").innerText = "Success! 🎉";
+            localStorage.removeItem("directBuy");
+            setTimeout(() => { window.location.href = "my-orders.html"; }, 2000);
+        } catch (err) { alert("Error!"); }
     }
 </script>
 </body>
