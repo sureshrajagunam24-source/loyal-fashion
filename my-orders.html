@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Orders - Loyal Fashion</title>
+    <title>My Orders - UTRA FASHION</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { --primary: #ff3f6c; --dark: #282c3f; }
@@ -23,10 +23,8 @@
         .details p { margin: 2px 0; color: #666; font-size: 14px; }
         .price { font-size: 18px; font-weight: bold; color: #000; margin-top: 5px; }
 
-        /* TRACKING UI UPDATED */
         .track-info { background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 15px; border-left: 4px solid var(--primary); }
-        .track-info b { font-size: 13px; color: var(--dark); }
-        .track-btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 8px; width: 100%; }
+        .track-btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 8px; width: 100%; }
 
         .track-stepper { display: flex; justify-content: space-between; position: relative; margin: 25px 0 10px; }
         .track-stepper::before { content: ''; position: absolute; top: 15px; left: 10%; width: 80%; height: 3px; background: #eee; z-index: 1; }
@@ -35,11 +33,9 @@
         .step .label { font-size: 12px; font-weight: bold; color: #999; }
         
         .step.active .circle { background: var(--primary); color: #fff; }
-        .step.active .label { color: var(--primary); }
         .step.completed .circle { background: #28a745; color: #fff; }
-        .step.completed .label { color: #28a745; }
 
-        .btn-group { display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; flex-wrap: wrap; }
+        .btn-group { display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
         .bill-btn { background: var(--dark); color: #fff; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .cancel-btn { background: #fff; color: #c62828; border: 1px solid #c62828; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     </style>
@@ -48,7 +44,7 @@
 
 <div class="orders-container">
     <a href="index.html" class="back-link">← Back to Shopping</a>
-    <h2>📦 My Orders</h2>
+    <h2>📦 My Orders - UTRA FASHION</h2>
     <div id="orders-list">
         <p style="text-align:center; color:#666;">Loading your orders... ⏳</p>
     </div>
@@ -77,15 +73,8 @@
         if(user) { loadMyOrders(user.email); } else { window.location.href = "index.html"; }
     });
 
-    // Tracking redirect logic
     window.openTracking = function(courier, id) {
-        let url = "";
-        const c = courier.toLowerCase();
-        if(c.includes("delhivery")) url = `https://www.delhivery.com/track/package/${id}`;
-        else if(c.includes("st")) url = `https://stcourier.com/track/`;
-        else if(c.includes("professional")) url = `https://www.tpcindia.com/Default.aspx`;
-        else url = `https://www.google.com/search?q=${courier}+tracking+${id}`;
-        
+        let url = `https://www.google.com/search?q=${courier}+tracking+${id}`;
         window.open(url, "_blank");
     }
 
@@ -99,101 +88,71 @@
                 const data = docSnap.data();
                 const orderId = docSnap.id;
                 userOrders.push({ id: orderId, ...data });
-                const dateVal = data.createdAt ? data.createdAt.toDate().toLocaleDateString() : "Just Now";
                 
                 let badgeClass = "status-badge";
-                let cancelBtnHTML = `<button class="cancel-btn" onclick="cancelOrder('${orderId}')">Cancel Order</button>`;
-                let billBtnHTML = ``;
+                if(data.status === 'Cancelled') badgeClass += " status-cancelled";
 
-                if(data.status === 'Cancelled') { badgeClass += " status-cancelled"; cancelBtnHTML = ``; }
-                if(data.status === 'Shipped' || data.status === 'Delivered') { 
-                    cancelBtnHTML = ``; 
-                    billBtnHTML = `<button class="bill-btn" onclick="downloadPDFBill('${orderId}')">📥 Invoice</button>`;
-                }
-
-                // Tracking Details Box
                 let trackingHTML = "";
                 if(data.status === 'Shipped' && data.trackingID) {
                     trackingHTML = `
                         <div class="track-info">
-                            <b>🚚 Tracking Info:</b><br>
-                            <small>${data.courierName || 'Courier Partner'}: ${data.trackingID}</small><br>
-                            <button class="track-btn" onclick="openTracking('${data.courierName}','${data.trackingID}')">TRACK NOW 🔗</button>
-                        </div>
-                    `;
+                            <b>🚚 Courier Tracking:</b><br>
+                            <small>${data.courierName}: ${data.trackingID}</small><br>
+                            <button class="track-btn" onclick="openTracking('${data.courierName}','${data.trackingID}')">TRACK ORDER 🔗</button>
+                        </div>`;
                 }
 
                 let s1 = data.status !== 'Cancelled' ? "completed" : "";
                 let s2 = (data.status === 'Shipped' || data.status === 'Delivered') ? "completed" : "";
                 let s3 = data.status === 'Delivered' ? "completed" : "";
-                
-                let trackerHTML = data.status === 'Cancelled' ? `<p style="color:red; text-align:center; font-weight:bold; margin-top:20px;">Order Cancelled 🚫</p>` : `
-                    <div class="track-stepper">
-                        <div class="step ${s1}"><div class="circle">1</div><div class="label">Placed</div></div>
-                        <div class="step ${s2}"><div class="circle">2</div><div class="label">Shipped</div></div>
-                        <div class="step ${s3}"><div class="circle">3</div><div class="label">Delivered</div></div>
-                    </div>`;
 
                 list.innerHTML += `
                 <div class="order-card">
                     <div class="order-header">
-                        <span><b>#${orderId.substring(0,8).toUpperCase()}</b> | ${dateVal}</span>
+                        <span><b>#${orderId.substring(0,8).toUpperCase()}</b></span>
                         <span class="${badgeClass}">${data.status}</span>
                     </div>
                     <div class="product-info">
                         <img src="${data.imageUrl}">
                         <div class="details">
                             <h3>${data.productName}</h3>
-                            <p>Size: <b>${data.size}</b></p>
-                            <p>To: ${data.buyerName}</p>
+                            <p>Size: ${data.size}</p>
                             <div class="price">₹${data.price}</div>
                         </div>
                     </div>
-                    ${trackerHTML}
+                    <div class="track-stepper">
+                        <div class="step ${s1}"><div class="circle">1</div><div class="label">Placed</div></div>
+                        <div class="step ${s2}"><div class="circle">2</div><div class="label">Shipped</div></div>
+                        <div class="step ${s3}"><div class="circle">3</div><div class="label">Delivered</div></div>
+                    </div>
                     ${trackingHTML}
                     <div class="btn-group">
-                        ${cancelBtnHTML} ${billBtnHTML}
+                        ${data.status === 'Pending' ? `<button class="cancel-btn" onclick="cancelOrder('${orderId}')">Cancel</button>` : ''}
+                        ${(data.status === 'Shipped' || data.status === 'Delivered') ? `<button class="bill-btn" onclick="downloadPDFBill('${orderId}')">Invoice</button>` : ''}
                     </div>
                 </div>`;
             });
         });
     }
 
-    window.cancelOrder = async function(orderId) {
-        if(confirm("Cancel this order? 🚫")) {
-            try { await db.collection("orders").doc(orderId).update({ status: "Cancelled" }); } catch(err) { }
-        }
-    }
-
     window.downloadPDFBill = function(orderId) {
         const order = userOrders.find(o => o.id === orderId);
-        if(!order) return;
-        const dateStr = order.createdAt ? order.createdAt.toDate().toLocaleDateString() : new Date().toLocaleDateString();
         const invoiceElement = document.createElement('div');
         invoiceElement.innerHTML = `
-            <div style="padding: 40px; font-family: 'Segoe UI', sans-serif; background: #fff;">
-                <h1 style="color: #ff3f6c; text-align: center;">Loyal Fashion</h1>
-                <p><b>Order ID:</b> #${orderId.toUpperCase()}</p>
-                <p><b>Date:</b> ${dateStr}</p>
+            <div style="padding: 40px; font-family: 'Segoe UI', sans-serif;">
+                <h1 style="color: #ff3f6c; text-align: center;">UTRA FASHION</h1>
                 <hr>
+                <p><b>Order ID:</b> #${orderId.toUpperCase()}</p>
                 <p><b>Customer:</b> ${order.buyerName}</p>
-                <p><b>Address:</b> ${order.buyerAddress}</p>
-                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                    <tr style="background: #282c3f; color: #fff;">
-                        <th style="padding: 10px; text-align: left;">Product</th>
-                        <th style="padding: 10px;">Size</th>
-                        <th style="padding: 10px; text-align: right;">Price</th>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; border-bottom: 1px solid #eee;">${order.productName}</td>
-                        <td style="padding: 10px; text-align: center;">${order.size}</td>
-                        <td style="padding: 10px; text-align: right;">₹${order.price}</td>
-                    </tr>
-                </table>
-                <h2 style="text-align: right; color: #ff3f6c;">Total: ₹${order.price}</h2>
+                <p><b>Product:</b> ${order.productName} (Size: ${order.size})</p>
+                <h2 style="color: #ff3f6c;">Total: ₹${order.price}</h2>
+                <p style="text-align: center; color: #888;">Thank you for shopping with UTRA FASHION! ❤️</p>
             </div>`;
-        const opt = { margin: 0.5, filename: `Invoice_${orderId.substring(0,6)}.pdf`, jsPDF: { unit: 'in', format: 'letter' } };
-        html2pdf().set(opt).from(invoiceElement).save();
+        html2pdf().from(invoiceElement).save(`UTRA_Invoice_${orderId.substring(0,6)}.pdf`);
+    }
+
+    window.cancelOrder = async function(orderId) {
+        if(confirm("Cancel order?")) { await db.collection("orders").doc(orderId).update({ status: "Cancelled" }); }
     }
 </script>
 </body>
