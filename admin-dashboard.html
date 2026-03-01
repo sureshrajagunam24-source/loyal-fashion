@@ -35,6 +35,9 @@ label { font-size: 12px; font-weight: bold; color: #555; margin-top: 5px; displa
 
 .size-selector { display: flex; gap: 15px; margin: 10px 0; background: #f9f9f9; padding: 10px; border-radius: 8px; }
 .size-selector label { display: inline; margin-right: 5px; cursor: pointer; }
+
+/* Tracking Input Style */
+.tracking-box { margin-top: 10px; display: none; background: #fdfdfd; padding: 10px; border: 1px dashed #ccc; border-radius: 5px; }
 </style>
 </head>
 
@@ -132,7 +135,7 @@ label { font-size: 12px; font-weight: bold; color: #555; margin-top: 5px; displa
             <h2>Buyer Live Orders</h2>
             <table>
                 <thead>
-                    <tr><th>Image</th><th>Product</th><th>Price</th><th>Buyer & Delivery Info</th><th>Status</th></tr>
+                    <tr><th>Image</th><th>Product</th><th>Price</th><th>Buyer & Delivery Info</th><th>Status & Tracking</th></tr>
                 </thead>
                 <tbody id="orders-table"></tbody>
             </table>
@@ -180,7 +183,7 @@ onAuthStateChanged(auth, (user)=>{
     } else {
         loadProducts();
         loadOrders();
-        loadAllReviews(); // Load Reviews Function Added
+        loadAllReviews();
     }
 });
 
@@ -270,7 +273,7 @@ function loadProducts(){
             table.innerHTML += `<tr>
                 <td><img src="${data.imageUrl}" class="order-img"></td>
                 <td>
-                    <b>${data.productName}</b><br>
+                    <b>${data.productName}</b><br><br>
                     <span style="color:${stockColor}; font-weight:bold; font-size:12px;">${stockStatusTxt}</span>
                 </td>
                 <td>₹${data.price}</td>
@@ -278,7 +281,7 @@ function loadProducts(){
                     <button style="background:${toggleBtnColor}; color:#fff; margin-bottom:5px; width:100%; border-radius:4px; padding:8px; border:none; cursor:pointer; font-weight:bold;" 
                             onclick="toggleStock('${docSnap.id}', ${isInStock})">
                         ${toggleBtnTxt}
-                    </button><br>
+                    </button><br><br>
                     <button class="edit-btn" onclick="editProduct('${docSnap.id}','${data.productName}','${data.price}','${data.description || ""}')">Edit</button>
                     <button class="delete-btn" onclick="deleteProduct('${docSnap.id}')">Delete</button>
                 </td>
@@ -287,8 +290,19 @@ function loadProducts(){
     });
 }
 
+// Updated Order Status & Tracking Save Function
 window.updateOrderStatus = async function(orderId, newStatus) {
-    try { await updateDoc(doc(db, "orders", orderId), { status: newStatus }); } catch (err) { }
+    try { 
+        const trackingID = document.getElementById(`trackId-${orderId}`).value.trim();
+        const courierName = document.getElementById(`courier-${orderId}`).value.trim();
+        
+        await updateDoc(doc(db, "orders", orderId), { 
+            status: newStatus,
+            trackingID: trackingID,
+            courierName: courierName
+        });
+        alert("Order Status & Tracking Updated! ✅");
+    } catch (err) { alert("Update failed: " + err.message); }
 }
 
 function loadOrders(){
@@ -306,12 +320,13 @@ function loadOrders(){
             if(data.status === 'Cancelled') statusColor = "#dc3545"; 
 
             const isDisabled = data.status === 'Cancelled' ? 'disabled' : '';
+            const showTracking = data.status === 'Shipped' ? 'block' : 'none';
 
             table.innerHTML += `
             <tr>
                 <td><img src="${data.imageUrl || 'image.png'}" class="order-img"></td>
                 <td>
-                    <b>${data.productName}</b><br>
+                    <b>${data.productName}</b><br><br>
                     <span style="display:inline-block; margin-top:5px; color:#ff3f6c; font-weight:bold; font-size:12px; background:#ffeef2; padding:3px 8px; border-radius:4px; border: 1px solid #ffccde;">
                         Size: ${data.size || 'Free Size'}
                     </span>
@@ -319,25 +334,30 @@ function loadOrders(){
                 <td>₹${data.price}</td>
                 <td class="buyer-info-box">
                     <span class="buyer-name">${data.buyerName || 'Unknown'}</span>
-                    📞 ${data.buyerMobile || 'N/A'}<br>
-                    📍 ${data.buyerAddress || 'N/A'}<br>
+                    📞 ${data.buyerMobile || 'N/A'}<br><br>
+                    📍 ${data.buyerAddress || 'N/A'}<br><br>
                     📧 <small>${data.user}</small>
                 </td>
                 <td>
-                    <select class="status-select" onchange="updateOrderStatus('${orderId}', this.value)" 
+                    <select class="status-select" id="select-${orderId}" onchange="document.getElementById('track-box-${orderId}').style.display = (this.value === 'Shipped') ? 'block' : 'none'; updateOrderStatus('${orderId}', this.value)" 
                             style="color:${statusColor}; border-color:${statusColor};" ${isDisabled}>
                         <option value="Pending" ${data.status === 'Pending' ? 'selected' : ''}>Pending</option>
                         <option value="Shipped" ${data.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
                         <option value="Delivered" ${data.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
                         <option value="Cancelled" ${data.status === 'Cancelled' ? 'selected' : ''}>Cancelled 🚫</option>
                     </select>
+
+                    <div id="track-box-${orderId}" class="tracking-box" style="display: ${showTracking}">
+                        <input type="text" id="courier-${orderId}" placeholder="Courier Name (e.g. ST Courier)" value="${data.courierName || ''}" style="margin: 5px 0; padding: 5px; font-size: 12px;">
+                        <input type="text" id="trackId-${orderId}" placeholder="Tracking Number" value="${data.trackingID || ''}" style="margin: 5px 0; padding: 5px; font-size: 12px;">
+                        <button style="background: #28a745; color: #fff; font-size: 11px; width: 100%;" onclick="updateOrderStatus('${orderId}', document.getElementById('select-${orderId}').value)">Save Tracking</button>
+                    </div>
                 </td>
             </tr>`;
         });
     });
 }
 
-/* MASS UPDATE: LOAD REVIEWS FUNCTION */
 function loadAllReviews() {
     const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
     onSnapshot(q, (snapshot) => {
@@ -352,7 +372,7 @@ function loadAllReviews() {
 
             table.innerHTML += `
             <tr>
-                <td><b style="color:var(--dark);">${data.productName}</b></td>
+                <td><b>${data.productName}</b></td>
                 <td class="buyer-info-box">
                     <span class="buyer-name">${data.userName}</span>
                     📧 <small>${data.userEmail}</small>
@@ -370,7 +390,6 @@ function loadAllReviews() {
     });
 }
 
-// DELETE REVIEW FUNCTION
 window.deleteReview = async function(id) {
     if(confirm("Are you sure you want to delete this review? 🗑️")) {
         try {
