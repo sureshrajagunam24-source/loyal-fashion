@@ -202,7 +202,6 @@ function renderProducts(products) {
         const btnActionBuy = isInStock ? `onclick="window.location.href='product-details.html?id=${data.id}'"` : `disabled`;
         const buyBtnText = isInStock ? 'BUY NOW' : 'UNAVAILABLE';
         const infoStyle = !isInStock ? 'color:#999;' : '';
-// Calculations
 const gpayPrice = data.price; 
 const codCharge = data.codCharge || 0; 
 const codTotal = gpayPrice + codCharge;
