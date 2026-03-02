@@ -116,70 +116,33 @@
         }
 
         .btn-group{
-            display:flex;
-            gap:15px;
-            margin-top:30px;
+            display:flex; gap:15px; margin-top:30px;
         }
 
         .btn-group button{
-            flex:1;
-            padding:15px;
-            font-weight:bold;
-            border-radius:5px;
-            cursor:pointer;
+            flex:1; padding:15px; font-weight:bold; border-radius:5px; cursor:pointer;
         }
 
-        .add-cart{
-            background:#fff;
-            border:1px solid #000;
-        }
-
-        .buy-now{
-            background:#000;
-            color:#fff;
-            border:none;
-        }
+        .add-cart{ background:#fff; border:1px solid #000; }
+        .buy-now{ background:#000; color:#fff; border:none; }
 
         .reviews-container{
-            max-width:1200px;
-            margin:40px auto;
-            padding:20px;
-            background:#fafafa;
-            border-radius:12px;
+            max-width:1200px; margin:40px auto; padding:20px; background:#fafafa; border-radius:12px;
         }
 
-        .review-card{
-            border-bottom:1px solid #eee;
-            padding:15px 0;
-        }
+        .review-card{ border-bottom:1px solid #eee; padding:15px 0; }
 
         .related-container{
-            max-width:1200px;
-            margin:40px auto;
-            padding:20px;
-            border-top:6px solid #f5f5f6;
+            max-width:1200px; margin:40px auto; padding:20px; border-top:6px solid #f5f5f6;
         }
 
-        .related-scroll{
-            display:flex;
-            gap:15px;
-            overflow-x:auto;
-        }
+        .related-scroll{ display:flex; gap:15px; overflow-x:auto; }
 
         .related-card{
-            min-width:160px;
-            border:1px solid #eee;
-            padding:10px;
-            border-radius:8px;
-            cursor:pointer;
+            min-width:160px; border:1px solid #eee; padding:10px; border-radius:8px; cursor:pointer;
         }
 
-        .related-card img{
-            width:100%;
-            height:200px;
-            object-fit:cover;
-            border-radius:6px;
-        }
+        .related-card img{ width:100%; height:200px; object-fit:cover; border-radius:6px; }
 
         @media(max-width:768px){
             .details-container{flex-direction:column;}
@@ -193,8 +156,8 @@
 
 <body>
 
-<div style="max-width:1200px;margin:0 auto;">
-    <a href="index.html" style="color:#ff3f6c;font-weight:bold;text-decoration:none;">
+<div style="max-width: 1200px; margin: 0 auto;">
+    <a href="index.html" style="color:#ff3f6c; font-weight:bold; text-decoration:none;">
         ← Back to Utra Fashion
     </a>
 </div>
@@ -210,7 +173,18 @@
     <div class="details-section">
         <div id="p-rating" class="rating-badge">⭐ 0.0 (0 Reviews)</div>
         <h1 id="p-name">Product Name</h1>
-        <div class="price" id="p-price">₹0</div>
+        
+        <div id="price-box" style="background: #f8f9fa; border-radius: 8px; padding: 15px; border: 1px solid #eee; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <span id="p-price" style="font-size: 28px; font-weight: bold; color: #000;">₹0</span>
+                <span id="p-mrp" style="text-decoration: line-through; color: #888; font-size: 16px;"></span>
+                <span id="p-off" style="color: #2e7d32; font-weight: bold; font-size: 14px;"></span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <p style="margin:0; font-size: 14px; color: #2e7d32;"><b>UPI / GPay:</b> <span id="val-gpay">₹0</span> ✅</p>
+                <p style="margin:0; font-size: 14px; color: #444;"><b>Cash on Delivery:</b> <span id="val-cod">₹0</span> 🚚</p>
+            </div>
+        </div>
 
         <div id="size-area">
             <b>Select Size</b>
@@ -270,13 +244,22 @@
             if(doc.exists){
                 productData = doc.data();
 
-                // UI data set pannunga
                 document.getElementById("p-name").innerText = productData.productName;
-                document.getElementById("p-price").innerText = "₹"+productData.price;
                 document.getElementById("p-desc").innerText = productData.description || "Premium quality material. Utra Fashion Exclusive Collection.";
                 document.getElementById("mainImg").src = productData.imageUrl || "https://via.placeholder.com/400x500?text=No+Image";
 
-                // DATA READY AANA APRUM REVIEWS & RELATED FETCH PANNUNGA (Fixes undefined error)
+                // PRICE SYNC LOGIC
+                const gpay = productData.price;
+                const cod = gpay + (productData.codCharge || 0);
+                const mrp = productData.mrp || (gpay + 200);
+                const off = Math.round(((mrp - gpay) / mrp) * 100);
+
+                document.getElementById("p-price").innerText = "₹" + gpay;
+                document.getElementById("p-mrp").innerText = "₹" + mrp;
+                document.getElementById("p-off").innerText = off + "% off";
+                document.getElementById("val-gpay").innerText = "₹" + gpay;
+                document.getElementById("val-cod").innerText = "₹" + cod;
+
                 loadReviews();
                 loadRelated(productData.category);
 
@@ -303,7 +286,7 @@
     }
 
     function loadReviews() {
-        if(!productData.productName) return; // Prevent error
+        if(!productData.productName) return;
         db.collection("reviews").where("productName", "==", productData.productName).onSnapshot(snap => {
             const list = document.getElementById("reviews-list");
             list.innerHTML = "";
@@ -319,7 +302,7 @@
     }
 
     function loadRelated(cat){
-        if(!cat) return; // Prevent error
+        if(!cat) return;
         db.collection("products").where("category","==",cat).limit(6).get().then(snap=>{
             const list = document.getElementById("related-list");
             list.innerHTML = "";
