@@ -204,33 +204,35 @@ function renderProducts(products) {
         const buyBtnText = isInStock ? 'BUY NOW' : 'UNAVAILABLE';
         const infoStyle = !isInStock ? 'color:#999;' : '';
 
-  list.innerHTML += `
-<div class="product-card" onclick="window.location.href='product-details.html?id=${data.id}'">
-    <div style="position:absolute; top:10px; right:10px; background:#ff3f6c; color:#fff; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold; z-index:10;">
-        ${offerPercent}% OFF
+list.innerHTML += `
+<div class="product-card" onclick="window.location.href='product-details.html?id=${data.id}'" style="position: relative; border: none; background: #fff;">
+    <div style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.8); border-radius: 50%; padding: 5px; z-index: 10;">
+        🤍
     </div>
+
+    <img src="${data.imageUrl}" class="${isInStock ? '' : 'dim-image'}" style="width:100%; height: 220px; object-fit: cover;">
     
-    <img src="${data.imageUrl}" class="${isInStock ? '' : 'dim-image'}">
-    
-    <div class="product-info">
-        <div id="rate-${data.id}" class="rating-badge">⭐ Loading...</div>
-        <h3>${data.productName}</h3>
+    <div class="product-info" style="padding: 10px 5px;">
+        <p style="font-size: 11px; color: #666; margin: 0; text-transform: capitalize;">${data.category || 'Collection'}</p>
+        <h3 style="font-size: 13px; margin: 2px 0; color: #333; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">${data.productName}</h3>
         
-        <div style="margin: 5px 0;">
-            <span style="text-decoration: line-through; color: #888; font-size: 13px;">₹${mrp}</span>
-            <span style="color: #ff3f6c; font-weight: bold; font-size: 18px; margin-left: 5px;">₹${gpayPrice}</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; background: #e8f5e9; padding: 2px 8px; border-radius: 4px; margin: 5px 0;">
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <span style="font-weight: bold; font-size: 15px; color: #000;">₹${gpayPrice}</span>
+                <span style="text-decoration: line-through; color: #888; font-size: 11px;">${mrp}</span>
+                <span style="color: #2e7d32; font-size: 11px; font-weight: bold;">${offerPercent}% off</span>
+            </div>
+            <span style="font-size: 10px; font-weight: bold; color: #2e7d32; letter-spacing: 0.5px;">UPI</span>
         </div>
         
-        <div style="background: #fff9fa; border-radius: 8px; padding: 10px; border: 1px dotted #ff3f6c; margin-top: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span style="font-size: 11px; color: #666;">Prepaid (GPay)</span>
-                <span style="font-size: 13px; color: #2e7d32; font-weight: bold;">₹${gpayPrice} ✅</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 11px; color: #ff3f6c; font-weight: bold;">FULL COD AVAILABLE</span>
-                <span style="font-size: 13px; color: #000; font-weight: bold;">₹${codTotal} 🚚</span>
-            </div>
-            <p style="font-size: 9px; color: #888; margin: 5px 0 0 0; text-align: center; letter-spacing: 0.5px;">NO ADVANCE PAYMENT NEEDED!</p>
+        <p style="font-size: 12px; color: #444; margin: 2px 0;">
+            <b>₹${codTotal}</b> <span style="color: #777; font-size: 11px;">with COD</span>
+        </p>
+        
+        <p style="font-size: 11px; color: #2e7d32; margin: 2px 0;">Free Delivery</p>
+
+        <div style="display: inline-flex; align-items: center; background: #2e7d32; color: #fff; padding: 1px 6px; border-radius: 12px; font-size: 11px; margin-top: 5px;">
+            <span id="rate-text-${data.id}">4.3</span> ★
         </div>
     </div>
 </div>`;
