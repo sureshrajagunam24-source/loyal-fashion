@@ -204,7 +204,7 @@ function renderProducts(products) {
         const buyBtnText = isInStock ? 'BUY NOW' : 'UNAVAILABLE';
         const infoStyle = !isInStock ? 'color:#999;' : '';
 
-   list.innerHTML += `
+  list.innerHTML += `
 <div class="product-card" onclick="window.location.href='product-details.html?id=${data.id}'">
     <div style="position:absolute; top:10px; right:10px; background:#ff3f6c; color:#fff; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold; z-index:10;">
         ${offerPercent}% OFF
@@ -221,9 +221,16 @@ function renderProducts(products) {
             <span style="color: #ff3f6c; font-weight: bold; font-size: 18px; margin-left: 5px;">₹${gpayPrice}</span>
         </div>
         
-        <div style="background: #f9f9f9; padding: 5px; border-radius: 4px; margin-top: 5px;">
-            <p style="font-size: 11px; color: #2e7d32; margin: 2px 0;"><b>GPay:</b> ₹${gpayPrice} ✅</p>
-            <p style="font-size: 11px; color: #666; margin: 2px 0;"><b>COD:</b> ₹${codTotal} 🚚</p>
+        <div style="background: #fff9fa; border-radius: 8px; padding: 10px; border: 1px dotted #ff3f6c; margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-size: 11px; color: #666;">Prepaid (GPay)</span>
+                <span style="font-size: 13px; color: #2e7d32; font-weight: bold;">₹${gpayPrice} ✅</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 11px; color: #ff3f6c; font-weight: bold;">FULL COD AVAILABLE</span>
+                <span style="font-size: 13px; color: #000; font-weight: bold;">₹${codTotal} 🚚</span>
+            </div>
+            <p style="font-size: 9px; color: #888; margin: 5px 0 0 0; text-align: center; letter-spacing: 0.5px;">NO ADVANCE PAYMENT NEEDED!</p>
         </div>
     </div>
 </div>`;
