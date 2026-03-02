@@ -126,11 +126,20 @@
         .add-cart{ background:#fff; border:1px solid #000; }
         .buy-now{ background:#000; color:#fff; border:none; }
 
+        /* REVIEWS STYLE */
         .reviews-container{
             max-width:1200px; margin:40px auto; padding:20px; background:#fafafa; border-radius:12px;
         }
 
         .review-card{ border-bottom:1px solid #eee; padding:15px 0; }
+        
+        .add-review-box { 
+            background: #fff; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #eee; 
+        }
+        
+        .add-review-box textarea { 
+            width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; 
+        }
 
         .related-container{
             max-width:1200px; margin:40px auto; padding:20px; border-top:6px solid #f5f5f6;
@@ -208,6 +217,20 @@
     <div id="reviews-list">
         <p style="color:#888;">No reviews yet. ⏳</p>
     </div>
+
+    <div id="review-form-box" style="display:none;" class="add-review-box">
+        <h3>Write a Review ✍️</h3>
+        <select id="r-rating" style="width:100%; padding:10px; border-radius:4px;">
+            <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+            <option value="4">⭐⭐⭐⭐ (4/5)</option>
+            <option value="3">⭐⭐⭐ (3/5)</option>
+            <option value="2">⭐⭐ (2/5)</option>
+            <option value="1">⭐ (1/5)</option>
+        </select>
+        <textarea id="r-comment" rows="3" placeholder="How is the quality of this product?"></textarea>
+        <button onclick="submitReview()" style="background:#ff3f6c; color:#fff; border:none; padding:12px 20px; border-radius:4px; cursor:pointer; font-weight:bold; margin-top:10px; width:100%;">SUBMIT REVIEW</button>
+    </div>
+    <p id="login-msg" style="color:#ff3f6c; font-weight:bold; margin-top:15px; display:none;">Please login to write a review. 👤</p>
 </div>
 
 <div class="related-container">
@@ -260,6 +283,7 @@
                 document.getElementById("val-gpay").innerText = "₹" + gpay;
                 document.getElementById("val-cod").innerText = "₹" + cod;
 
+                // FIXED: Call loadReviews only after productData is set
                 loadReviews();
                 loadRelated(productData.category);
 
@@ -285,8 +309,21 @@
         });
     }
 
+    // LOGIN CHECK FOR REVIEW FORM
+    auth.onAuthStateChanged(user => {
+        const formBox = document.getElementById("review-form-box");
+        const msg = document.getElementById("login-msg");
+        if(user) {
+            formBox.style.display = "block";
+            msg.style.display = "none";
+        } else {
+            formBox.style.display = "none";
+            msg.style.display = "block";
+        }
+    });
+
     function loadReviews() {
-        if(!productData.productName) return;
+        if(!productData.productName) return; //
         db.collection("reviews").where("productName", "==", productData.productName).onSnapshot(snap => {
             const list = document.getElementById("reviews-list");
             list.innerHTML = "";
@@ -299,6 +336,24 @@
             let avg = snap.size > 0 ? (total / snap.size).toFixed(1) : "0.0";
             document.getElementById("p-rating").innerText = `⭐ ${avg} (${snap.size} Reviews)`;
         });
+    }
+
+    // SUBMIT REVIEW
+    window.submitReview = async function() {
+        const user = auth.currentUser;
+        const rating = parseInt(document.getElementById("r-rating").value);
+        const comment = document.getElementById("r-comment").value.trim();
+        if(!comment) return alert("Please write a comment! 📝");
+        
+        await db.collection("reviews").add({
+            productName: productData.productName,
+            userName: user.email.split('@')[0],
+            rating: rating,
+            comment: comment,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        document.getElementById("r-comment").value = "";
+        alert("Thank you! Review submitted ⭐");
     }
 
     function loadRelated(cat){
