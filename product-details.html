@@ -337,14 +337,31 @@ function zoom(e) {
 function resetZoom() { document.getElementById("mainImg").style.transformOrigin = `center`; }
 
 window.prepareBuy = function() {
-    if(productData.sizes && productData.sizes.length > 0 && !selectedSize) {
-        alert("Please select a size first! 👕"); return;
+    // 1. MODHALA INDHA LOGIN CHECK-AH ADD PANNUNGA
+    const user = auth.currentUser; 
+    if(!user) { 
+        alert("Please login first to buy products! 👤"); 
+        openLogin(); // Login box-ah open pannum
+        return; 
     }
-    const buyItem = { productId: productId, productName: productData.productName, price: productData.price, imageUrl: productData.imageUrl, size: selectedSize || "Free Size" };
+
+    // 2. UNGA PAZHAYA LOGIC INGA IRUKKUM (Line 215 to 225)
+    if(productData.sizes && productData.sizes.length > 0 && !selectedSize) {
+        alert("Please select a size first! 👕"); 
+        return;
+    }
+
+    const buyItem = { 
+        productId: productId, 
+        productName: productData.productName, 
+        price: productData.price, 
+        imageUrl: productData.imageUrl, 
+        size: selectedSize || "Free Size" 
+    };
+    
     localStorage.setItem("directBuy", JSON.stringify(buyItem));
     window.location.href = "checkout.html"; 
 }
-
 /* MASS UPDATE: FIXED ADD TO CART LOGIC */
 window.addToCart = function() {
     const user = auth.currentUser;
