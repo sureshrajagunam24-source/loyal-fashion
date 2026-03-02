@@ -140,6 +140,37 @@ color:#fff;
 border:none;
 }
 
+/* REVIEWS STYLE */
+.reviews-container{
+max-width:1200px;
+margin:40px auto;
+padding:20px;
+background:#fafafa;
+border-radius:12px;
+}
+
+.review-card{
+border-bottom:1px solid #eee;
+padding:15px 0;
+}
+
+.review-form{
+background:#fff;
+padding:20px;
+border-radius:8px;
+border:1px solid #eee;
+margin-top:20px;
+}
+
+.review-form textarea{
+width:100%;
+padding:10px;
+margin:10px 0;
+border:1px solid #ddd;
+border-radius:4px;
+box-sizing: border-box;
+}
+
 .related-container{
 max-width:1200px;
 margin:40px auto;
@@ -180,8 +211,8 @@ border-radius:6px;
 
 <body>
 
-<div style="max-width:1200px;margin:0 auto;">
-<a href="index.html" style="color:#ff3f6c;font-weight:bold;text-decoration:none;">
+<div style="max-width: 1200px; margin: 0 auto;">
+<a href="index.html" style="color:#ff3f6c; font-weight:bold; text-decoration:none;">
 ← Back to Utra Fashion
 </a>
 </div>
@@ -219,12 +250,32 @@ border-radius:6px;
 </div>
 </div>
 
+<div class="reviews-container">
+    <h2>Customer Reviews ⭐</h2>
+    <div id="reviews-list">
+        <p style="color:#888;">No reviews yet. Be the first!</p>
+    </div>
+
+    <div id="review-form-box" style="display:none;" class="review-form">
+        <h3>Write a Review ✍️</h3>
+        <select id="r-rating" style="width:100%; padding:10px;">
+            <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+            <option value="4">⭐⭐⭐⭐ (4/5)</option>
+            <option value="3">⭐⭐⭐ (3/5)</option>
+            <option value="2">⭐⭐ (2/5)</option>
+            <option value="1">⭐ (1/5)</option>
+        </select>
+        <textarea id="r-comment" rows="3" placeholder="How is the product?"></textarea>
+        <button onclick="submitReview()" style="background:#ff3f6c; color:#fff; border:none; padding:10px 20px; border-radius:4px; cursor:pointer; font-weight:bold;">SUBMIT REVIEW</button>
+    </div>
+    <p id="login-msg" style="color:#ff3f6c; font-weight:bold;">Login to write a review. 👤</p>
+</div>
+
 <div class="related-container">
 <h2>You May Also Like</h2>
 <div class="related-scroll" id="related-list"></div>
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -288,11 +339,50 @@ onclick="changeImg(this,'${img}')">`;
 }
 });
 
-// Related
+// Related & Reviews
 loadRelated(productData.category);
+loadReviews(); 
 }
 });
 }
+
+// REVIEWS LOGIC
+function loadReviews() {
+    if(!productData.productName) return; 
+    db.collection("reviews").where("productName", "==", productData.productName).onSnapshot(snap => {
+        const list = document.getElementById("reviews-list");
+        list.innerHTML = "";
+        let total = 0;
+        snap.forEach(doc => {
+            const r = doc.data();
+            total += r.rating;
+            list.innerHTML += `<div class="review-card"><b>${r.userName}</b><div>${"⭐".repeat(r.rating)}</div><p>${r.comment}</p></div>`;
+        });
+        let avg = snap.size > 0 ? (total / snap.size).toFixed(1) : "0.0";
+        document.getElementById("p-rating").innerText = `⭐ ${avg} (${snap.size} Reviews)`;
+    });
+}
+
+window.submitReview = async function() {
+    const user = auth.currentUser;
+    const rating = parseInt(document.getElementById("r-rating").value);
+    const comment = document.getElementById("r-comment").value.trim();
+    if(!comment) return alert("Write something! 📝");
+    await db.collection("reviews").add({
+        productName: productData.productName,
+        userName: user.email.split('@')[0],
+        rating: rating,
+        comment: comment,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById("r-comment").value = "";
+    alert("Review Sent! ⭐");
+}
+
+auth.onAuthStateChanged(user => {
+    document.getElementById("review-form-box").style.display = user ? "block" : "none";
+    document.getElementById("login-msg").style.display = user ? "none" : "block";
+});
 
 function loadRelated(cat){
 db.collection("products")
@@ -331,11 +421,6 @@ el.classList.add("active");
 
 function addToCart(){
 let cart=JSON.parse(localStorage.getItem("cart"))||[];
-let existing=cart.find(p=>p.id===productId && p.size===selectedSize);
-
-if(existing){
-existing.qty+=1;
-}else{
 cart.push({
 id:productId,
 name:productData.productName,
@@ -344,8 +429,6 @@ image:productData.imageUrl,
 size:selectedSize||"Free Size",
 qty:1
 });
-}
-
 localStorage.setItem("cart",JSON.stringify(cart));
 alert("Added to Cart 🛒 - Utra Fashion");
 }
