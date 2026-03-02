@@ -187,6 +187,11 @@ function renderProducts(products) {
     const list = document.getElementById("product-list");
     list.innerHTML = "";
     products.forEach(data => {
+        const gpayPrice = data.price; // Admin-la neenga kudukkura normal price
+      const codExtra = data.codCharge || 0; // Admin-la neenga sethurukkura extra COD charge
+      const codTotal = gpayPrice + codExtra; // Total COD amount
+      const mrp = data.mrp || (gpayPrice + 200); // Admin MRP, illana default MRP
+       const offerPercent = Math.round(((mrp - gpayPrice) / mrp) * 100); // Offer % calculation
         const isInStock = data.inStock !== false;
         const outOfStockHTML = isInStock ? "" : `<div class="out-of-stock-badge">OUT OF STOCK</div>`;
         const imgClass = isInStock ? "" : "dim-image";
@@ -198,13 +203,27 @@ function renderProducts(products) {
         const buyBtnText = isInStock ? 'BUY NOW' : 'UNAVAILABLE';
         const infoStyle = !isInStock ? 'color:#999;' : '';
 
-      list.innerHTML += `<div class="product-card" onclick="window.location.href='product-details.html?id=${data.id}'">
-    ${outOfStockHTML}
-    <img src="${data.imageUrl}" class="${imgClass}" style="cursor:${imgCursor};">
+   list.innerHTML += `
+<div class="product-card" onclick="window.location.href='product-details.html?id=${data.id}'">
+    <div style="position:absolute; top:10px; right:10px; background:#ff3f6c; color:#fff; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold; z-index:10;">
+        ${offerPercent}% OFF
+    </div>
+    
+    <img src="${data.imageUrl}" class="${isInStock ? '' : 'dim-image'}">
+    
     <div class="product-info">
         <div id="rate-${data.id}" class="rating-badge">⭐ Loading...</div>
-        <h3 style="${infoStyle}">${data.productName}</h3>
-        <p style="${infoStyle}">₹${data.price}</p>
+        <h3>${data.productName}</h3>
+        
+        <div style="margin: 5px 0;">
+            <span style="text-decoration: line-through; color: #888; font-size: 13px;">₹${mrp}</span>
+            <span style="color: #ff3f6c; font-weight: bold; font-size: 18px; margin-left: 5px;">₹${gpayPrice}</span>
+        </div>
+        
+        <div style="background: #f9f9f9; padding: 5px; border-radius: 4px; margin-top: 5px;">
+            <p style="font-size: 11px; color: #2e7d32; margin: 2px 0;"><b>GPay:</b> ₹${gpayPrice} ✅</p>
+            <p style="font-size: 11px; color: #666; margin: 2px 0;"><b>COD:</b> ₹${codTotal} 🚚</p>
+        </div>
     </div>
 </div>`;
         
