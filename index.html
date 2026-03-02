@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -202,39 +203,31 @@ function renderProducts(products) {
         const btnActionBuy = isInStock ? `onclick="window.location.href='product-details.html?id=${data.id}'"` : `disabled`;
         const buyBtnText = isInStock ? 'BUY NOW' : 'UNAVAILABLE';
         const infoStyle = !isInStock ? 'color:#999;' : '';
-const gpayPrice = data.price; 
-const codCharge = data.codCharge || 0; 
-const codTotal = gpayPrice + codCharge;
-const mrp = data.mrp || (gpayPrice + 200);
-const offerPercent = Math.round(((mrp - gpayPrice) / mrp) * 100);
 
-// Product Info UI Update
-list.innerHTML += `
+   list.innerHTML += `
 <div class="product-card" onclick="window.location.href='product-details.html?id=${data.id}'">
-    <div style="position:absolute; top:8px; right:8px; background:#ff3f6c; color:#fff; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold; z-index:5;">
+    <div style="position:absolute; top:10px; right:10px; background:#ff3f6c; color:#fff; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold; z-index:10;">
         ${offerPercent}% OFF
     </div>
+    
     <img src="${data.imageUrl}" class="${isInStock ? '' : 'dim-image'}">
-    <div class="product-info" style="padding: 12px;">
-        <h3 style="font-size: 15px; margin-bottom: 5px;">${data.productName}</h3>
-        <div style="margin-bottom: 10px;">
-            <span style="text-decoration: line-through; color: #999; font-size: 13px;">₹${mrp}</span>
-            <span style="color: #ff3f6c; font-weight: 800; font-size: 18px; margin-left: 6px;">₹${gpayPrice}</span>
+    
+    <div class="product-info">
+        <div id="rate-${data.id}" class="rating-badge">⭐ Loading...</div>
+        <h3>${data.productName}</h3>
+        
+        <div style="margin: 5px 0;">
+            <span style="text-decoration: line-through; color: #888; font-size: 13px;">₹${mrp}</span>
+            <span style="color: #ff3f6c; font-weight: bold; font-size: 18px; margin-left: 5px;">₹${gpayPrice}</span>
         </div>
         
-        <div style="background: #f8f9fa; border-radius: 8px; padding: 8px; border: 1px solid #eee;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span style="font-size: 12px; color: #666;">GPay Offer</span>
-                <span style="font-size: 13px; color: #2e7d32; font-weight: bold;">₹${gpayPrice} ✅</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 12px; color: #666;">Cash on Delivery</span>
-                <span style="font-size: 13px; color: #444; font-weight: bold;">₹${codTotal} 🚚</span>
-            </div>
+        <div style="background: #f9f9f9; padding: 5px; border-radius: 4px; margin-top: 5px;">
+            <p style="font-size: 11px; color: #2e7d32; margin: 2px 0;"><b>GPay:</b> ₹${gpayPrice} ✅</p>
+            <p style="font-size: 11px; color: #666; margin: 2px 0;"><b>COD:</b> ₹${codTotal} 🚚</p>
         </div>
     </div>
 </div>`;
-
+        
         db.collection("reviews").where("productName", "==", data.productName).get().then(snap => {
             let total = 0;
             snap.forEach(r => total += r.data().rating);
