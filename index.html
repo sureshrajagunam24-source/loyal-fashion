@@ -198,19 +198,15 @@ function renderProducts(products) {
         const buyBtnText = isInStock ? 'BUY NOW' : 'UNAVAILABLE';
         const infoStyle = !isInStock ? 'color:#999;' : '';
 
-        list.innerHTML += `<div class="product-card">
-            ${outOfStockHTML}
-            <img src="${data.imageUrl}" class="${imgClass}" ${imgClick} style="cursor:${imgCursor};">
-            <div class="product-info">
-                <div id="rate-${data.id}" class="rating-badge">⭐ Loading...</div>
-                <h3 style="${infoStyle}">${data.productName}</h3>
-                <p style="${infoStyle}">₹${data.price}</p>
-                <div class="btn-group">
-                    <button class="cart-add-btn ${btnClass}" ${btnActionCart}>ADD TO CART</button>
-                    <button class="buy-now-btn ${btnClass}" ${btnActionBuy}">${buyBtnText}</button>
-                </div>
-            </div>
-        </div>`;
+      list.innerHTML += `<div class="product-card" onclick="window.location.href='product-details.html?id=${data.id}'">
+    ${outOfStockHTML}
+    <img src="${data.imageUrl}" class="${imgClass}" style="cursor:${imgCursor};">
+    <div class="product-info">
+        <div id="rate-${data.id}" class="rating-badge">⭐ Loading...</div>
+        <h3 style="${infoStyle}">${data.productName}</h3>
+        <p style="${infoStyle}">₹${data.price}</p>
+    </div>
+</div>`;
         
         db.collection("reviews").where("productName", "==", data.productName).get().then(snap => {
             let total = 0;
