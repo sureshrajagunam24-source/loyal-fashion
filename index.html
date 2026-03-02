@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,13 +19,17 @@
 
         /* AUTOMATIC SLIDER STYLE */
         .slider-container { width: 100%; max-width: 1200px; margin: 15px auto; overflow: hidden; border-radius: 8px; position: relative; }
-        .slider-wrapper { display: flex; transition: transform 0.6s ease-in-out; width: 500%; } /* Corrected for 5 images */
-        .slide { min-width: 20%; height: 250px; object-fit: cover; } /* 100/5 = 20% */
+        .slider-wrapper { display: flex; transition: transform 0.6s ease-in-out; width: 500%; }
+        .slide { min-width: 20%; height: 250px; object-fit: cover; }
 
-        /* SEARCH BAR */
-        .search-container { background: var(--light); padding: 8px 15px; border-radius: 4px; display: flex; align-items: center; width: 350px; border: 1px solid #eee; }
-        .search-container input { background: none; border: none; outline: none; width: 100%; font-size: 13px; }
-        .search-lens { width: 18px; height: 18px; cursor: pointer; opacity: 0.6; }
+        /* SEARCH BAR Trigger */
+        .search-container { background: var(--light); padding: 8px 15px; border-radius: 4px; display: flex; align-items: center; width: 350px; border: 1px solid #eee; cursor: pointer; }
+        .search-container input { background: none; border: none; outline: none; width: 100%; font-size: 13px; pointer-events: none; }
+        .search-lens { width: 18px; height: 18px; opacity: 0.6; }
+
+        /* SEARCH OVERLAY STYLE */
+        #search-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#fff; z-index:5000; padding:20px; box-sizing:border-box; }
+        .suggestion-item { padding: 15px; border-bottom: 1px solid #f5f5f5; font-size: 16px; color: #333; cursor: pointer; display: flex; align-items: center; gap: 12px; }
 
         /* CATEGORY NAV */
         .nav-links { display: flex; gap: 25px; font-weight: bold; font-size: 14px; }
@@ -45,14 +48,9 @@
 
         .out-of-stock-badge { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); background: rgba(220, 53, 69, 0.9); color: white; padding: 10px 20px; font-weight: bold; font-size: 18px; border-radius: 4px; z-index: 10; width: 80%; text-align: center; pointer-events: none;}
         .dim-image { opacity: 0.5; filter: grayscale(100%); }
-        .disabled-btn { background: #ccc !important; color: #666 !important; cursor: not-allowed !important; border: none !important; }
 
         .product-info { padding: 15px; }
         .rating-badge { background: #e8f5e9; color: #2e7d32; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 5px; display: inline-block; }
-
-        .btn-group { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
-        .cart-add-btn { background: #fff; color: var(--dark); border: 1px solid #d4d5d9; padding: 10px; font-weight: bold; cursor: pointer; }
-        .buy-now-btn { background: var(--dark); color: #fff; border: none; padding: 12px; font-weight: bold; cursor: pointer; }
 
         /* SIDEBAR & MODAL */
         #profileSidebar { position: fixed; top: 0; right: -100%; width: 300px; height: 100%; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 4000; transition: 0.4s; padding: 25px; }
@@ -62,26 +60,28 @@
 
         /* MOBILE UI */
         @media (max-width: 768px) {
-            html, body { overflow-x: hidden; width: 100vw; margin: 0; padding: 0; }
             .header { flex-direction: column; padding: 10px; gap: 10px; }
             .top-bar-mobile { display: flex !important; justify-content: space-between; align-items: center; width: 100%; order: 1; }
-            .logo-section { margin: 0; gap: 8px; }
             .logo-section b { font-size: 16px; }
-            .action-icons { display: flex; gap: 15px; align-items: center; order: initial; }
-            #userName { display: none; }
-            .icon-btn { font-size: 10px; text-align: center; min-width: 40px; }
-            .avatar-circle { margin: 0 auto 2px; width: 28px; height: 28px; font-size: 14px; }
             .search-container { order: 2; width: 100%; margin: 5px 0; box-sizing: border-box; }
             .nav-links { order: 3; width: 100%; justify-content: space-between; gap: 5px; font-size: 12px; padding-top: 5px; border-top: 1px solid #eee; }
             .product-grid { padding: 15px 10px; grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .product-card img { height: 180px; }
-            #profileSidebar { width: 85%; }
-            .slide { height: 180px; object-fit: cover; }
+            .slide { height: 180px; }
         }
     </style>
 </head>
 
 <body>
+
+<div id="search-overlay">
+    <div style="display:flex; align-items:center; gap:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+        <span onclick="closeSearch()" style="font-size:24px; cursor:pointer;">←</span>
+        <input type="text" id="overlaySearchInput" placeholder="Search for products..." oninput="showSuggestions(this.value)" style="flex:1; border:none; outline:none; font-size:18px;">
+    </div>
+    <div id="suggestion-box" style="margin-top:15px; overflow-y: auto; max-height: 80vh;"></div>
+</div>
+
 <div class="header">
     <div class="top-bar-mobile">
         <div class="logo-section" onclick="location.reload()">
@@ -98,8 +98,8 @@
             <div class="icon-btn" onclick="window.location.href='cart.html'">🛒<span id="cartCount">0</span><br>Cart</div>
         </div>
     </div>
-    <div class="search-container">
-        <input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="Search in Utra Fashion...">
+    <div class="search-container" onclick="openSearch()">
+        <input type="text" placeholder="Search in Utra Fashion...">
         <img src="https://cdn-icons-png.flaticon.com/512/149/149852.png" class="search-lens">
     </div>
     <div class="nav-links">
@@ -127,9 +127,9 @@
     <button onclick="closeProfile()" style="float:right; border:none; background:none; font-size:20px; cursor:pointer;">✖</button>
     <div style="text-align:center; margin-top:30px;"><div id="sideLetter" style="width:60px; height:60px; background:var(--primary); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; margin:0 auto;"></div></div>
     <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-    <input type="text" id="sideName" placeholder="Full Name" style="width:90%; padding:10px; margin-bottom:10px;">
-    <input type="number" id="sideMobile" placeholder="Mobile" style="width:90%; padding:10px; margin-bottom:10px;">
-    <textarea id="sideAddress" rows="3" placeholder="Address" style="width:90%; padding:10px; margin-bottom:10px;"></textarea>
+    <input type="text" id="sideName" placeholder="Full Name">
+    <input type="number" id="sideMobile" placeholder="Mobile">
+    <textarea id="sideAddress" rows="3" placeholder="Address"></textarea>
     <button onclick="saveProfile()" style="background:var(--primary); color:white; border:none; padding:12px; width:100%; font-weight:bold; cursor:pointer;">SAVE DETAILS</button>
     <button onclick="window.location.href='my-orders.html'" style="width:100%; background:#000; color:#fff; margin-top:10px; padding:10px; border:none; cursor:pointer;">📦 MY ORDERS</button>
     <button onclick="auth.signOut().then(()=>location.reload())" style="margin-top:20px; color:red; background:none; border:none; cursor:pointer; width:100%;">Logout</button>
@@ -137,8 +137,8 @@
 
 <div class="modal" id="loginBox">
     <h3 id="auth-title">Login</h3>
-    <input type="email" id="email" placeholder="Email" style="width:90%; padding:10px; margin-bottom:10px;">
-    <input type="password" id="password" placeholder="Password" style="width:90%; padding:10px; margin-bottom:10px;">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
     <button id="auth-btn" onclick="handleAuth()" style="width:100%; background:var(--primary); color:white; border:none; padding:12px; cursor:pointer; font-weight:bold;">CONTINUE</button>
     <p id="toggle-text" style="font-size:12px; text-align:center; color:#888; margin-top:15px;">New to Utra Fashion? <span style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="toggleAuth()">Create Account</span></p>
     <button onclick="closeLogin()" style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer;">Close</button>
@@ -157,24 +157,44 @@ const auth=firebase.auth();
 let allProducts = []; 
 let isLoginMode = true;
 
-// BANNER SLIDER LOGIC CORRECTED
+// BANNER SLIDER
 let slideIndex = 0;
 function startBanner() {
     const slider = document.getElementById('bannerSlider');
     const slides = document.querySelectorAll('.slide');
     const totalBanners = slides.length; 
-
     if(totalBanners === 0) return;
-    
     setInterval(() => {
         slideIndex++;
         if(slideIndex >= totalBanners) slideIndex = 0;
-        
         const movePercentage = (100 / totalBanners) * slideIndex;
         slider.style.transform = `translateX(-${movePercentage}%)`;
     }, 3000); 
 }
 startBanner();
+
+// SEARCH OVERLAY LOGIC
+window.openSearch = function() {
+    document.getElementById("search-overlay").style.display = "block";
+    document.getElementById("overlaySearchInput").focus();
+}
+window.closeSearch = function() {
+    document.getElementById("search-overlay").style.display = "none";
+    document.getElementById("suggestion-box").innerHTML = "";
+    document.getElementById("overlaySearchInput").value = "";
+}
+window.showSuggestions = function(val) {
+    const box = document.getElementById("suggestion-box");
+    box.innerHTML = "";
+    if (val.length < 1) return;
+    const filtered = allProducts.filter(p => p.productName.toLowerCase().includes(val.toLowerCase()));
+    filtered.forEach(p => {
+        box.innerHTML += `
+            <div class="suggestion-item" onclick="window.location.href='product-details.html?id=${p.id}'">
+                🔍 <span>${p.productName}</span>
+            </div>`;
+    });
+}
 
 db.collection("products").orderBy("createdAt","desc").onSnapshot(snapshot=>{
     allProducts = [];
@@ -188,62 +208,32 @@ function renderProducts(products) {
     const list = document.getElementById("product-list");
     list.innerHTML = "";
     products.forEach(data => {
-        const gpayPrice = data.price; // Admin-la neenga kudukkura normal price
-      const codExtra = data.codCharge || 0; // Admin-la neenga sethurukkura extra COD charge
-      const codTotal = gpayPrice + codExtra; // Total COD amount
-      const mrp = data.mrp || (gpayPrice + 200); // Admin MRP, illana default MRP
-       const offerPercent = Math.round(((mrp - gpayPrice) / mrp) * 100); // Offer % calculation
+        const gpayPrice = data.price;
+        const codExtra = data.codCharge || 0;
+        const codTotal = gpayPrice + codExtra;
+        const mrp = data.mrp || (gpayPrice + 200);
+        const offerPercent = Math.round(((mrp - gpayPrice) / mrp) * 100);
         const isInStock = data.inStock !== false;
-        const outOfStockHTML = isInStock ? "" : `<div class="out-of-stock-badge">OUT OF STOCK</div>`;
-        const imgClass = isInStock ? "" : "dim-image";
-        const imgClick = isInStock ? `onclick="window.location.href='product-details.html?id=${data.id}'"` : "";
-        const imgCursor = isInStock ? "pointer" : "not-allowed";
-        const btnClass = isInStock ? "" : "disabled-btn";
-        const btnActionCart = isInStock ? `onclick="addToCart('${data.id}','${data.productName}',${data.price},'${data.imageUrl}')"` : `disabled`;
-        const btnActionBuy = isInStock ? `onclick="window.location.href='product-details.html?id=${data.id}'"` : `disabled`;
-        const buyBtnText = isInStock ? 'BUY NOW' : 'UNAVAILABLE';
-        const infoStyle = !isInStock ? 'color:#999;' : '';
 
-list.innerHTML += `
-<div class="product-card" onclick="window.location.href='product-details.html?id=${data.id}'" style="position: relative; border: none; background: #fff;">
-    <div style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.8); border-radius: 50%; padding: 5px; z-index: 10;">
-        🤍
-    </div>
-
-    <img src="${data.imageUrl}" class="${isInStock ? '' : 'dim-image'}" style="width:100%; height: 220px; object-fit: cover;">
-    
-    <div class="product-info" style="padding: 10px 5px;">
-        <p style="font-size: 11px; color: #666; margin: 0; text-transform: capitalize;">${data.category || 'Collection'}</p>
-        <h3 style="font-size: 13px; margin: 2px 0; color: #333; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">${data.productName}</h3>
-        
-        <div style="display: flex; align-items: center; justify-content: space-between; background: #e8f5e9; padding: 2px 8px; border-radius: 4px; margin: 5px 0;">
-            <div style="display: flex; align-items: center; gap: 5px;">
-                <span style="font-weight: bold; font-size: 15px; color: #000;">₹${gpayPrice}</span>
-                <span style="text-decoration: line-through; color: #888; font-size: 11px;">${mrp}</span>
-                <span style="color: #2e7d32; font-size: 11px; font-weight: bold;">${offerPercent}% off</span>
+        list.innerHTML += `
+        <div class="product-card" onclick="window.location.href='product-details.html?id=${data.id}'">
+            <div style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.8); border-radius: 50%; padding: 5px; z-index: 10;">🤍</div>
+            <img src="${data.imageUrl}" class="${isInStock ? '' : 'dim-image'}">
+            <div class="product-info">
+                <p style="font-size: 11px; color: #666; margin: 0;">${data.category || 'Collection'}</p>
+                <h3 style="font-size: 13px; margin: 2px 0;">${data.productName}</h3>
+                <div style="display: flex; align-items: center; justify-content: space-between; background: #e8f5e9; padding: 2px 8px; border-radius: 4px;">
+                    <div>
+                        <span style="font-weight: bold; font-size: 15px;">₹${gpayPrice}</span>
+                        <span style="text-decoration: line-through; color: #888; font-size: 11px;">${mrp}</span>
+                        <span style="color: #2e7d32; font-size: 11px;">${offerPercent}% off</span>
+                    </div>
+                    <span style="font-size: 10px; font-weight: bold; color: #2e7d32;">UPI</span>
+                </div>
+                <p style="font-size: 12px; margin: 5px 0;"><b>₹${codTotal}</b> <span style="color: #777;">with COD</span></p>
+                <p style="font-size: 11px; color: #2e7d32;">Free Delivery</p>
             </div>
-            <span style="font-size: 10px; font-weight: bold; color: #2e7d32; letter-spacing: 0.5px;">UPI</span>
-        </div>
-        
-        <p style="font-size: 12px; color: #444; margin: 2px 0;">
-            <b>₹${codTotal}</b> <span style="color: #777; font-size: 11px;">with COD</span>
-        </p>
-        
-        <p style="font-size: 11px; color: #2e7d32; margin: 2px 0;">Free Delivery</p>
-
-        <div style="display: inline-flex; align-items: center; background: #2e7d32; color: #fff; padding: 1px 6px; border-radius: 12px; font-size: 11px; margin-top: 5px;">
-            <span id="rate-text-${data.id}">4.3</span> ★
-        </div>
-    </div>
-</div>`;
-        
-        db.collection("reviews").where("productName", "==", data.productName).get().then(snap => {
-            let total = 0;
-            snap.forEach(r => total += r.data().rating);
-            let avg = snap.size > 0 ? (total / snap.size).toFixed(1) : "0.0";
-            const rateEl = document.getElementById(`rate-${data.id}`);
-            if(rateEl) rateEl.innerText = `⭐ ${avg} (${snap.size})`;
-        });
+        </div>`;
     });
 }
 
@@ -252,24 +242,16 @@ window.filterCategory = function(cat) {
     else { renderProducts(allProducts.filter(p => p.category === cat)); }
 }
 
-window.searchProducts = function() {
-    const term = document.getElementById('searchInput').value.toLowerCase();
-    renderProducts(allProducts.filter(p => p.productName.toLowerCase().includes(term)));
-}
-
 auth.onAuthStateChanged(user=>{
-    const loginBtn=document.getElementById("loginBtn");
-    const userInfo=document.getElementById("userInfo");
     const count = JSON.parse(localStorage.getItem("cart"))?.length || 0;
     document.getElementById("cartCount").innerText = count;
-
     if(user && user.email !== "sureshrajagunam24@gmail.com"){
-        loginBtn.style.display="none";
-        userInfo.style.display="block";
+        document.getElementById("loginBtn").style.display="none";
+        document.getElementById("userInfo").style.display="block";
         document.getElementById("userLetter").innerText = user.email.charAt(0).toUpperCase();
     } else {
-        loginBtn.style.display="block";
-        userInfo.style.display="none";
+        document.getElementById("loginBtn").style.display="block";
+        document.getElementById("userInfo").style.display="none";
     }
 });
 
@@ -286,10 +268,7 @@ function openProfile() {
         }
     });
 }
-function closeProfile() { 
-    document.getElementById("profileSidebar").style.right = "-100%"; 
-    document.getElementById("overlay").style.display = "none"; 
-}
+function closeProfile() { document.getElementById("profileSidebar").style.right = "-100%"; document.getElementById("overlay").style.display = "none"; }
 function saveProfile() {
     const user = auth.currentUser;
     const name = document.getElementById("sideName").value;
@@ -301,21 +280,15 @@ function openLogin() { document.getElementById("loginBox").style.display="block"
 function closeLogin() { document.getElementById("loginBox").style.display="none"; }
 function toggleAuth() {
     isLoginMode = !isLoginMode;
-    const title = document.getElementById("auth-title");
-    const btn = document.getElementById("auth-btn");
-    const toggleText = document.getElementById("toggle-text");
     if (isLoginMode) {
-        title.innerText = "Login"; btn.innerText = "CONTINUE";
-        toggleText.innerHTML = 'New to Utra Fashion? <span style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="toggleAuth()">Create Account</span>';
+        document.getElementById("auth-title").innerText = "Login"; document.getElementById("auth-btn").innerText = "CONTINUE";
     } else {
-        title.innerText = "Create Account"; btn.innerText = "REGISTER";
-        toggleText.innerHTML = 'Already have an account? <span style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="toggleAuth()">Login</span>';
+        document.getElementById("auth-title").innerText = "Create Account"; document.getElementById("auth-btn").innerText = "REGISTER";
     }
 }
 function handleAuth() {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
-    if (!email || !password) { alert("Please fill all fields!"); return; }
     if (isLoginMode) {
         auth.signInWithEmailAndPassword(email, password).then(() => location.reload()).catch(err => alert(err.message));
     } else {
@@ -323,19 +296,7 @@ function handleAuth() {
     }
 }
 
-window.addToCart = function(id,name,price,image){
-    const user = auth.currentUser;
-    if(!user) { openLogin(); return; }
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    cart.push({id,name,price,image});
-    localStorage.setItem("cart",JSON.stringify(cart));
-    document.getElementById("cartCount").innerText=cart.length;
-    alert("Added to Cart ✅");
-}
-
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/pwabuilder-sw.js");
-}
+if ("serviceWorker" in navigator) { navigator.serviceWorker.register("/pwabuilder-sw.js"); }
 </script>
 </body>
 </html>
