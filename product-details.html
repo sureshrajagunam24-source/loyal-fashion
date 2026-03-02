@@ -64,6 +64,13 @@
         .add-review-box select, .add-review-box textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; box-sizing: border-box;}
         .add-review-box button { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
+        /* RELATED PRODUCTS SECTION STYLE */
+        .related-container { max-width: 1200px; margin: 40px auto; padding: 20px; border-top: 8px solid #f5f5f6; }
+        .related-scroll { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; }
+        .related-card { min-width: 160px; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 10px; cursor: pointer; text-align: left; }
+         .related-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 6px; }
+         .related-card h4 { font-size: 14px; margin: 10px 0 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #333; }
+      
         /* =========================================
            MASS UPDATE: MOBILE RESPONSIVE DESIGN 📱
            ========================================= */
@@ -131,6 +138,13 @@
     </div>
 </div>
 
+      <div class="related-container">
+    <h2 style="font-size: 20px; margin-bottom: 20px;">You May Also Like</h2>
+    <div class="related-scroll" id="related-list">
+        <p style="color:#888;">Fetching similar products...</p>
+    </div>
+</div>
+
 <div class="reviews-container">
     <h2>Customer Reviews ⭐</h2>
     <div id="reviews-list">
@@ -174,6 +188,7 @@ if(productId) {
     db.collection("products").doc(productId).get().then(doc => {
         if(doc.exists) {
             productData = doc.data();
+            loadRelated(productData.category, productId);
             document.getElementById("p-name").innerText = productData.productName;
             document.getElementById("p-price").innerText = "₹" + productData.price;
             document.getElementById("mainImg").src = productData.imageUrl;
@@ -214,6 +229,24 @@ auth.onAuthStateChanged(user => {
     }
 });
 
+// Related Products Load Panra Logic
+function loadRelated(cat, currentId) {
+    db.collection("products").where("category", "==", cat).limit(8).get().then(snap => {
+        const list = document.getElementById("related-list");
+        list.innerHTML = "";
+        snap.forEach(doc => {
+            const data = doc.data();
+            if(doc.id !== currentId) {
+                list.innerHTML += `
+                <div class="related-card" onclick="window.location.href='product-details.html?id=${doc.id}'">
+                    <img src="${data.imageUrl}">
+                    <h4>${data.productName}</h4>
+                    <b>₹${data.price}</b>
+                </div>`;
+            }
+        });
+    });
+}
 /* REVIEWS LOGIC */
 function loadReviews() {
     db.collection("reviews").where("productName", "==", productData.productName).onSnapshot(snap => {
